@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import './Results.css'
 
 function Results({ data, policy }) {
@@ -16,16 +17,56 @@ function Results({ data, policy }) {
     return `${(value * 100).toFixed(2)}%`
   }
 
+  // Animated Number Component
+  const AnimatedNumber = ({ value, formatter = (v) => v }) => {
+    const ref = useRef(null)
+    const previousValue = useRef(value)
+
+    useEffect(() => {
+      if (!ref.current || previousValue.current === value) return
+
+      const element = ref.current
+      const start = previousValue.current || 0
+      const end = value
+      const duration = 800
+      const startTime = performance.now()
+
+      const animate = (currentTime) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+
+        // Ease-out cubic function for smooth deceleration
+        const easeOutCubic = 1 - Math.pow(1 - progress, 3)
+        const current = start + (end - start) * easeOutCubic
+
+        element.textContent = formatter(current)
+
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        } else {
+          element.textContent = formatter(end)
+          previousValue.current = end
+        }
+      }
+
+      requestAnimationFrame(animate)
+    }, [value, formatter])
+
+    return <span ref={ref}>{formatter(value)}</span>
+  }
+
   return (
     <div className="results">
-      <h2>Analysis Results</h2>
+      <h2>Analysis results</h2>
 
       <div className="results-grid">
         {/* Cost Section */}
         {data.cost && (
           <div className="result-card highlight">
-            <h3>Cost Estimate</h3>
-            <div className="result-value large">{formatCurrency(data.cost)}</div>
+            <h3>Cost estimate</h3>
+            <div className="result-value large">
+              <AnimatedNumber value={data.cost} formatter={formatCurrency} />
+            </div>
             {data.fullReformCost && (
               <div className="result-comparison">
                 Full reform: {formatCurrency(data.fullReformCost)}
@@ -40,8 +81,10 @@ function Results({ data, policy }) {
         {/* Families Affected */}
         {data.familiesAffected !== undefined && (
           <div className="result-card">
-            <h3>Families Benefiting</h3>
-            <div className="result-value">{formatNumber(data.familiesAffected)}</div>
+            <h3>Families benefiting</h3>
+            <div className="result-value">
+              <AnimatedNumber value={data.familiesAffected} formatter={formatNumber} />
+            </div>
             {data.totalAffectedFamilies && (
               <div className="result-detail">
                 Out of {formatNumber(data.totalAffectedFamilies)} affected families
@@ -53,8 +96,10 @@ function Results({ data, policy }) {
         {/* Children Impact */}
         {data.childrenNoLongerLimited !== undefined && (
           <div className="result-card">
-            <h3>Children No Longer Limited</h3>
-            <div className="result-value">{formatNumber(data.childrenNoLongerLimited)}</div>
+            <h3>Children no longer limited</h3>
+            <div className="result-value">
+              <AnimatedNumber value={data.childrenNoLongerLimited} formatter={formatNumber} />
+            </div>
             {data.totalLimitedChildren && (
               <div className="result-detail">
                 Out of {formatNumber(data.totalLimitedChildren)} currently limited
@@ -66,8 +111,10 @@ function Results({ data, policy }) {
         {/* Poverty Reduction */}
         {data.childrenOutOfPoverty !== undefined && (
           <div className="result-card highlight">
-            <h3>Children Lifted from Poverty</h3>
-            <div className="result-value">{formatNumber(data.childrenOutOfPoverty)}</div>
+            <h3>Children lifted from poverty</h3>
+            <div className="result-value">
+              <AnimatedNumber value={data.childrenOutOfPoverty} formatter={formatNumber} />
+            </div>
             {data.povertyRateReduction && (
               <div className="result-detail">
                 Poverty rate reduction: {formatPercent(data.povertyRateReduction)}
@@ -79,7 +126,7 @@ function Results({ data, policy }) {
         {/* Child Poverty Rates */}
         {data.baselinePovertyRate !== undefined && (
           <div className="result-card">
-            <h3>Child Poverty Rate</h3>
+            <h3>Child poverty rate</h3>
             <div className="result-comparison-box">
               <div className="comparison-item">
                 <span className="label">Baseline:</span>
@@ -96,7 +143,7 @@ function Results({ data, policy }) {
         {/* Cost Effectiveness */}
         {data.costPerChild !== undefined && (
           <div className="result-card">
-            <h3>Cost per Child Lifted from Poverty</h3>
+            <h3>Cost per child lifted from poverty</h3>
             <div className="result-value">£{formatNumber(Math.round(data.costPerChild))}</div>
           </div>
         )}
@@ -105,7 +152,7 @@ function Results({ data, policy }) {
       {/* Policy-specific details */}
       {data.policySpecific && (
         <div className="policy-specific-section">
-          <h3>Policy-Specific Details</h3>
+          <h3>Policy-specific details</h3>
           <div className="detail-grid">
             {Object.entries(data.policySpecific).map(([key, value]) => (
               <div key={key} className="detail-item">
@@ -124,7 +171,7 @@ function Results({ data, policy }) {
       {/* Raw output for debugging */}
       {data.rawOutput && (
         <details className="raw-output">
-          <summary>View Detailed Analysis Output</summary>
+          <summary>View detailed analysis output</summary>
           <pre>{data.rawOutput}</pre>
         </details>
       )}
@@ -132,7 +179,7 @@ function Results({ data, policy }) {
       {/* Warnings */}
       {data.warnings && data.warnings.length > 0 && (
         <div className="warnings">
-          <h4>⚠️ Important Notes</h4>
+          <h4>⚠️ Important notes</h4>
           {data.warnings.map((warning, idx) => (
             <p key={idx}>{warning}</p>
           ))}

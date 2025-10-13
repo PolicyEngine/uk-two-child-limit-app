@@ -52,7 +52,7 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
         return (
           <div className="param-group">
             <label htmlFor="childLimit">
-              Child Limit
+              Child limit
               <span className="param-description">
                 Support provided for up to this many children
               </span>
@@ -72,7 +72,7 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
         return (
           <div className="param-group">
             <label htmlFor="ageLimit">
-              Age Exemption Threshold (years)
+              Age exemption threshold (years)
               <span className="param-description">
                 Children under this age are exempt from the limit
               </span>
@@ -108,7 +108,7 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
         return (
           <div className="param-group">
             <label htmlFor="reductionRate">
-              Third+ Child Element Rate
+              Third+ child element rate
               <span className="param-description">
                 Percentage of standard child element for 3rd+ children
               </span>
@@ -147,13 +147,16 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>Policy Reforms</h2>
+        <img src="/white.png" alt="PolicyEngine" className="logo" />
 
         {/* Selected Policy Display */}
         <div className="selected-policy-display">
           <button
             className="policy-selector-button"
-            onClick={() => setShowPolicyList(!showPolicyList)}
+            onClick={() => {
+              console.log('Button clicked, current state:', showPolicyList)
+              setShowPolicyList(!showPolicyList)
+            }}
           >
             <div className="selected-policy-info">
               <div className="policy-name">{selectedPolicyInfo?.name || 'Select Policy'}</div>
@@ -161,30 +164,30 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
             </div>
             <span className="dropdown-arrow">{showPolicyList ? '▲' : '▼'}</span>
           </button>
+
+          {/* Policy List (shown when expanded) - MOVED INSIDE BUTTON CONTAINER */}
+          {showPolicyList && (
+            <div className="policy-dropdown">
+              <nav className="sidebar-nav">
+                {policies.map((policy) => (
+                  <button
+                    key={policy.id}
+                    className={`policy-option ${selectedPolicy === policy.id ? 'active' : ''}`}
+                    onClick={() => handlePolicySelect(policy.id)}
+                  >
+                    <div className="policy-name">{policy.name}</div>
+                    <div className="policy-description">{policy.description}</div>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          )}
         </div>
 
-        {/* Policy List (shown when expanded) */}
-        {showPolicyList && (
-          <div className="policy-dropdown">
-            <nav className="sidebar-nav">
-              {policies.map((policy) => (
-                <button
-                  key={policy.id}
-                  className={`policy-option ${selectedPolicy === policy.id ? 'active' : ''}`}
-                  onClick={() => handlePolicySelect(policy.id)}
-                >
-                  <div className="policy-name">{policy.name}</div>
-                  <div className="policy-description">{policy.description}</div>
-                </button>
-              ))}
-            </nav>
-          </div>
-        )}
-
         {/* Configure Parameters - moved here for better positioning */}
-        {selectedPolicy && (
+        {!showPolicyList && selectedPolicy && (
           <div className="policy-parameters-inline">
-            <h3>Configure Parameters</h3>
+            <h3>Configure parameters</h3>
             <div className="param-content">
               {renderParameterInputs()}
             </div>
@@ -196,7 +199,7 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
         <div className="policy-parameters">
           {/* Year Selector */}
           <div className="year-selector-section">
-            <label htmlFor="year-select" className="year-label">Analysis Year:</label>
+            <label htmlFor="year-select" className="year-label">Analysis year:</label>
             <select
               id="year-select"
               className="year-selector"

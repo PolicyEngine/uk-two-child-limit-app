@@ -166,7 +166,7 @@ function App() {
       />
       <main className="main-content">
         <header className="header">
-          <h1>UK Two-Child Limit Policy Analysis Dashboard</h1>
+          <h1>Two-child limit policy analysis dashboard</h1>
         </header>
 
         {error && (
