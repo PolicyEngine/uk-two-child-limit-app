@@ -1,0 +1,15 @@
+metric,value
+cost,2822675704.2169366
+fullReformCost,3145072093.2484174
+familiesAffected,2556282.75
+totalAffectedFamilies,2848252.75
+childrenNoLongerLimited,750631.75
+totalLimitedChildren,836366.375
+childrenOutOfPoverty,358620.125
+baselinePovertyRate,0.1820971816778183
+reformedPovertyRate,0.15739358961582184
+povertyRateReduction,0.02470359019935131
+costPerChild,3760.4000952756614
+ageLimit,9.0
+totalChildrenUnderAge,7323384.0
+affectedChildrenUnderAge,750631.75
