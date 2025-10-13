@@ -3,18 +3,6 @@
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .results h2 {
@@ -67,6 +55,8 @@
   color: var(--pe-gray-900);
   margin-bottom: 0.5rem;
   transition: all 0.3s ease;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .result-value.large {
@@ -116,6 +106,8 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .policy-specific-section {
@@ -154,6 +146,8 @@
 .detail-value {
   font-weight: 600;
   color: #1a1a1a;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .raw-output {
@@ -210,4 +204,100 @@
 
 .warnings p:last-child {
   margin-bottom: 0;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.chart-section {
+  padding: 1.5rem;
+  background: var(--pe-gray-50);
+  border: 1px solid var(--pe-gray-100);
+  border-radius: 8px;
+}
+
+.chart-section h3 {
+  font-size: 1.1rem;
+  color: var(--pe-gray-900);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.comparison-table-section {
+  margin-top: 2rem;
+}
+
+.comparison-table-section h3 {
+  font-size: 1.25rem;
+  color: var(--pe-gray-900);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.comparison-table-wrapper {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.comparison-table thead {
+  background: var(--pe-teal);
+  color: white;
+}
+
+.comparison-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 2px solid var(--pe-teal-dark);
+}
+
+.comparison-table th:first-child {
+  width: 250px;
+}
+
+.comparison-table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+  transition: background 0.2s;
+}
+
+.comparison-table tbody tr:hover {
+  background: var(--pe-gray-50);
+}
+
+.comparison-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.comparison-table td {
+  padding: 1rem;
+}
+
+.comparison-table .metric-label {
+  font-weight: 500;
+  color: var(--pe-gray-700);
+  font-size: 0.95rem;
+}
+
+.comparison-table .metric-value {
+  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--pe-gray-900);
+}
+
+.comparison-table .metric-value.highlight {
+  color: var(--pe-teal);
 }

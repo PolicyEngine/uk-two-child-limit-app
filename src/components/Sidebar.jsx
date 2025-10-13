@@ -34,36 +34,39 @@ const policies = [
   },
 ]
 
-function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnalyze, loading, selectedYear, onYearChange }) {
-  const [showPolicyList, setShowPolicyList] = useState(false)
+function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange, loading, selectedYear, onYearChange }) {
+  const [showPolicyList, setShowPolicyList] = useState(true) // Show by default for multi-select
+  const [expandedPolicy, setExpandedPolicy] = useState(null) // Track which policy params are shown
 
-  const selectedPolicyInfo = policies.find(p => p.id === selectedPolicy)
+  const hasAdjustableParameters = (policyId) => {
+    return ['three-child-limit', 'under-five-exemption', 'lower-third-child-element'].includes(policyId)
+  }
 
-  const renderParameterInputs = () => {
-    switch (selectedPolicy) {
+  const renderParameterInputs = (policyId) => {
+    const params = policyParams[policyId]
+
+    switch (policyId) {
       case 'full-abolition':
-        return (
-          <div className="param-info">
-            <p>This policy removes the two-child limit completely. No additional parameters needed.</p>
-          </div>
-        )
+      case 'disabled-child-exemption':
+      case 'working-families-exemption':
+        return null
 
       case 'three-child-limit':
         return (
           <div className="param-group">
-            <label htmlFor="childLimit">
+            <label htmlFor={`childLimit-${policyId}`}>
               Child limit
               <span className="param-description">
                 Support provided for up to this many children
               </span>
             </label>
             <input
-              id="childLimit"
+              id={`childLimit-${policyId}`}
               type="number"
               min="3"
               max="9"
               value={params.childLimit || 3}
-              onChange={(e) => onParamChange('childLimit', parseInt(e.target.value))}
+              onChange={(e) => onParamChange(policyId, 'childLimit', parseInt(e.target.value))}
             />
           </div>
         )
@@ -71,43 +74,27 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
       case 'under-five-exemption':
         return (
           <div className="param-group">
-            <label htmlFor="ageLimit">
+            <label htmlFor={`ageLimit-${policyId}`}>
               Age exemption threshold (years)
               <span className="param-description">
                 Children under this age are exempt from the limit
               </span>
             </label>
             <input
-              id="ageLimit"
+              id={`ageLimit-${policyId}`}
               type="number"
               min="3"
               max="9"
               value={params.ageLimit || 5}
-              onChange={(e) => onParamChange('ageLimit', parseInt(e.target.value))}
+              onChange={(e) => onParamChange(policyId, 'ageLimit', parseInt(e.target.value))}
             />
-          </div>
-        )
-
-      case 'disabled-child-exemption':
-        return (
-          <div className="param-info">
-            <p>Families with at least one disabled child receiving DLA or PIP are exempt from the limit.</p>
-            <p className="note">No additional parameters needed.</p>
-          </div>
-        )
-
-      case 'working-families-exemption':
-        return (
-          <div className="param-info">
-            <p>Families where at least one adult has employment income are exempt from the limit.</p>
-            <p className="note">The limit only applies to out-of-work families.</p>
           </div>
         )
 
       case 'lower-third-child-element':
         return (
           <div className="param-group">
-            <label htmlFor="reductionRate">
+            <label htmlFor={`reductionRate-${policyId}`}>
               Third+ child element rate
               <span className="param-description">
                 Percentage of standard child element for 3rd+ children
@@ -115,13 +102,13 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
             </label>
             <div className="slider-container">
               <input
-                id="reductionRate"
+                id={`reductionRate-${policyId}`}
                 type="range"
                 min="0.5"
                 max="1"
                 step="0.1"
                 value={params.reductionRate || 0.7}
-                onChange={(e) => onParamChange('reductionRate', parseFloat(e.target.value))}
+                onChange={(e) => onParamChange(policyId, 'reductionRate', parseFloat(e.target.value))}
               />
               <span className="slider-value">
                 {Math.round((params.reductionRate || 0.7) * 100)}%
@@ -139,94 +126,45 @@ function Sidebar({ selectedPolicy, onSelectPolicy, params, onParamChange, onAnal
     }
   }
 
-  const handlePolicySelect = (policyId) => {
-    onSelectPolicy(policyId)
-    setShowPolicyList(false)
-  }
-
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <img src="/white.png" alt="PolicyEngine" className="logo" />
 
-        {/* Selected Policy Display */}
-        <div className="selected-policy-display">
-          <button
-            className="policy-selector-button"
-            onClick={() => {
-              console.log('Button clicked, current state:', showPolicyList)
-              setShowPolicyList(!showPolicyList)
-            }}
-          >
-            <div className="selected-policy-info">
-              <div className="policy-name">{selectedPolicyInfo?.name || 'Select Policy'}</div>
-              <div className="policy-description">{selectedPolicyInfo?.description}</div>
-            </div>
-            <span className="dropdown-arrow">{showPolicyList ? '▲' : '▼'}</span>
-          </button>
+        <h3 style={{ color: 'white', marginBottom: '1rem' }}>Select policies to compare</h3>
 
-          {/* Policy List (shown when expanded) - MOVED INSIDE BUTTON CONTAINER */}
-          {showPolicyList && (
-            <div className="policy-dropdown">
-              <nav className="sidebar-nav">
-                {policies.map((policy) => (
-                  <button
-                    key={policy.id}
-                    className={`policy-option ${selectedPolicy === policy.id ? 'active' : ''}`}
-                    onClick={() => handlePolicySelect(policy.id)}
-                  >
-                    <div className="policy-name">{policy.name}</div>
-                    <div className="policy-description">{policy.description}</div>
-                  </button>
-                ))}
-              </nav>
+        {/* Policy List with Checkboxes */}
+        <div className="policy-list-multi">
+          {policies.map((policy) => (
+            <div key={policy.id} className="policy-checkbox-item">
+              <label className="policy-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selectedPolicies.includes(policy.id)}
+                  onChange={() => onPolicyToggle(policy.id)}
+                  disabled={selectedPolicies.includes(policy.id) && selectedPolicies.length === 1}
+                />
+                <div className="policy-info">
+                  <div className="policy-name">{policy.name}</div>
+                  <div className="policy-description">{policy.description}</div>
+                </div>
+              </label>
+
+              {/* Show parameters if policy is selected and has adjustable parameters */}
+              {selectedPolicies.includes(policy.id) && hasAdjustableParameters(policy.id) && (
+                <div className="policy-params-inline">
+                  {renderParameterInputs(policy.id)}
+                </div>
+              )}
             </div>
-          )}
+          ))}
         </div>
-
-        {/* Configure Parameters - moved here for better positioning */}
-        {!showPolicyList && selectedPolicy && (
-          <div className="policy-parameters-inline">
-            <h3>Configure parameters</h3>
-            <div className="param-content">
-              {renderParameterInputs()}
-            </div>
-          </div>
-        )}
       </div>
 
-      {selectedPolicy && (
-        <div className="policy-parameters">
-          {/* Year Selector */}
-          <div className="year-selector-section">
-            <label htmlFor="year-select" className="year-label">Analysis year:</label>
-            <select
-              id="year-select"
-              className="year-selector"
-              value={selectedYear}
-              onChange={(e) => onYearChange(e.target.value)}
-            >
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-              <option value="2029">2029</option>
-            </select>
-          </div>
-
-          <button
-            className="analyze-button"
-            onClick={onAnalyze}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Analyzing...
-              </>
-            ) : (
-              'Run Analysis'
-            )}
-          </button>
+      {loading && (
+        <div className="loading-indicator">
+          <span className="spinner"></span>
+          <span>Analyzing {selectedPolicies.length} {selectedPolicies.length === 1 ? 'policy' : 'policies'}...</span>
         </div>
       )}
     </aside>

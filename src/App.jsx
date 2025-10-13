@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import Results from './components/Results'
 import './App.css'
 
 function App() {
   const [selectedYear, setSelectedYear] = useState('2026')
-  const [selectedPolicy, setSelectedPolicy] = useState('full-abolition')
+  const [selectedPolicies, setSelectedPolicies] = useState(['full-abolition']) // Changed to array
   const [policyParams, setPolicyParams] = useState({
     'full-abolition': {},
     'three-child-limit': { childLimit: 3 },
@@ -14,7 +14,7 @@ function App() {
     'working-families-exemption': {},
     'lower-third-child-element': { reductionRate: 0.7 },
   })
-  const [results, setResults] = useState(null)
+  const [results, setResults] = useState({}) // Changed to object to store results by policy
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -28,7 +28,7 @@ function App() {
       const values = lines[i].split(',')
       const rowYear = values[0]
       const rowPolicy = values[1]
-      const rowParameter = values[2] === '' || values[2] === 'None' ? null : parseInt(values[2])
+      const rowParameter = values[2] === '' || values[2] === 'None' ? null : parseFloat(values[2])
       const metric = values[3]
       const value = parseFloat(values[4])
 
@@ -36,7 +36,8 @@ function App() {
       if (rowYear === year && rowPolicy === policy) {
         if (policy === 'three-child-limit' || policy === 'under-five-exemption' || policy === 'lower-third-child-element') {
           // For policies with parameters, match the specific parameter value
-          if (rowParameter === parameter) {
+          // Convert both to numbers for comparison to handle 3 vs 3.0
+          if (Number(rowParameter) === Number(parameter)) {
             data[metric] = value
           }
         } else {
@@ -52,7 +53,7 @@ function App() {
   const handleAnalyze = async () => {
     setLoading(true)
     setError(null)
-    setResults(null)
+    setResults({})
 
     try {
       // Fetch comprehensive CSV data
@@ -63,58 +64,90 @@ function App() {
       }
 
       const csvText = await response.text()
+      const allResults = {}
 
-      // Get the parameter value based on policy type
-      let parameter = null
-      if (selectedPolicy === 'three-child-limit') {
-        parameter = policyParams[selectedPolicy].childLimit
-      } else if (selectedPolicy === 'under-five-exemption') {
-        parameter = policyParams[selectedPolicy].ageLimit
-      } else if (selectedPolicy === 'lower-third-child-element') {
-        // Convert reduction rate (0.5-1.0) to percentage (50-100)
-        parameter = Math.round(policyParams[selectedPolicy].reductionRate * 100)
-      }
+      // Process each selected policy
+      for (const selectedPolicy of selectedPolicies) {
+        // Get the parameter value based on policy type
+        let parameter = null
+        if (selectedPolicy === 'three-child-limit') {
+          parameter = policyParams[selectedPolicy].childLimit
+        } else if (selectedPolicy === 'under-five-exemption') {
+          parameter = policyParams[selectedPolicy].ageLimit
+        } else if (selectedPolicy === 'lower-third-child-element') {
+          // Convert reduction rate (0.5-1.0) to percentage (50-100)
+          parameter = Math.round(policyParams[selectedPolicy].reductionRate * 100)
+        }
 
-      const data = parseComprehensiveCSV(csvText, selectedYear, selectedPolicy, parameter)
+        console.log(`Processing policy: ${selectedPolicy}, parameter: ${parameter}`)
 
-      // Format the results
-      const formattedResults = {
-        cost: data.cost,
-        fullReformCost: data.fullReformCost || data.cost,
-        familiesAffected: data.familiesAffected,
-        totalAffectedFamilies: data.totalAffectedFamilies,
-        childrenNoLongerLimited: data.childrenNoLongerLimited,
-        totalLimitedChildren: data.childrenNoLongerLimited,
-        childrenOutOfPoverty: data.childrenOutOfPoverty,
-        baselinePovertyRate: data.baselinePovertyRate,
-        reformedPovertyRate: data.reformedPovertyRate,
-        povertyRateReduction: data.povertyRateReduction,
-        costPerChild: data.costPerChild,
-        policySpecific: {},
-        warnings: [],
-      }
+        // Get data for all years (2026-2029)
+        const years = ['2026', '2027', '2028', '2029']
+        const allYearsData = years.map(year => {
+          const yearData = parseComprehensiveCSV(csvText, year, selectedPolicy, parameter)
+          return {
+            year: year,
+            cost: yearData.cost,
+            familiesAffected: yearData.familiesAffected,
+            childrenNoLongerLimited: yearData.childrenNoLongerLimited,
+            childrenOutOfPoverty: yearData.childrenOutOfPoverty,
+            povertyRateReduction: yearData.povertyRateReduction,
+            costPerChild: yearData.costPerChild,
+          }
+        })
 
-      // Add policy-specific data
-      if (selectedPolicy === 'three-child-limit') {
+        // Get data for 2026 (for main results display)
+        const data2026 = parseComprehensiveCSV(csvText, '2026', selectedPolicy, parameter)
+        console.log(`Data for ${selectedPolicy}:`, data2026)
+        console.log(`All years data for ${selectedPolicy}:`, allYearsData)
+
+        // Prepare budgetary impact data
+        const budgetaryImpact = allYearsData.map(d => ({
+          year: d.year,
+          cost: d.cost / 1e9 // Convert to billions
+        }))
+
+        // Format the results
+        const formattedResults = {
+          policyId: selectedPolicy,
+          cost: data2026.cost,
+          fullReformCost: data2026.fullReformCost || data2026.cost,
+          familiesAffected: data2026.familiesAffected,
+          totalAffectedFamilies: data2026.totalAffectedFamilies,
+          childrenNoLongerLimited: data2026.childrenNoLongerLimited,
+          totalLimitedChildren: data2026.childrenNoLongerLimited,
+          childrenOutOfPoverty: data2026.childrenOutOfPoverty,
+          baselinePovertyRate: data2026.baselinePovertyRate,
+          reformedPovertyRate: data2026.reformedPovertyRate,
+          povertyRateReduction: data2026.povertyRateReduction,
+          costPerChild: data2026.costPerChild,
+          budgetaryImpact: budgetaryImpact,
+          allYearsData: allYearsData, // Add all years data
+          policySpecific: {},
+          warnings: [],
+        }
+
+        // Add policy-specific data
+        if (selectedPolicy === 'three-child-limit') {
         formattedResults.policySpecific = {
           'Child Limit': policyParams[selectedPolicy].childLimit,
-          'Families with 3 children': data.familiesWith3Children,
-          'Families with 4+ children': data.familiesWith4PlusChildren,
+          'Families with 3 children': data2026.familiesWith3Children,
+          'Families with 4+ children': data2026.familiesWith4PlusChildren,
         }
       } else if (selectedPolicy === 'under-five-exemption') {
         formattedResults.policySpecific = {
           'Age Limit': `${policyParams[selectedPolicy].ageLimit} years`,
-          'Total children under 5': data.totalChildrenUnder5,
-          'Affected children under 5': data.affectedChildrenUnder5,
+          'Total children under 5': data2026.totalChildrenUnder5,
+          'Affected children under 5': data2026.affectedChildrenUnder5,
         }
       } else if (selectedPolicy === 'disabled-child-exemption') {
         formattedResults.policySpecific = {
-          'Total disabled children': data.disabledChildren,
-          'Families with disabled child': data.familiesWithDisabledChild,
+          'Total disabled children': data2026.disabledChildren,
+          'Families with disabled child': data2026.familiesWithDisabledChild,
         }
-        if (data.publishedCost) {
+        if (data2026.publishedCost) {
           formattedResults.warnings.push(
-            `Published estimate: £${(data.publishedCost / 1e9).toFixed(1)}bn cost, ${data.publishedChildrenOutOfPoverty.toLocaleString()} children lifted from poverty`
+            `Published estimate: £${(data2026.publishedCost / 1e9).toFixed(1)}bn cost, ${data2026.publishedChildrenOutOfPoverty.toLocaleString()} children lifted from poverty`
           )
           formattedResults.warnings.push(
             'Large discrepancy due to small sample size in FRS data. Use published estimates for policy decisions.'
@@ -122,19 +155,22 @@ function App() {
         }
       } else if (selectedPolicy === 'working-families-exemption') {
         formattedResults.policySpecific = {
-          'Working families exempt': data.workingFamilies,
-          'Non-working families still affected': data.nonWorkingFamilies,
+          'Working families exempt': data2026.workingFamilies,
+          'Non-working families still affected': data2026.nonWorkingFamilies,
         }
       } else if (selectedPolicy === 'lower-third-child-element') {
-        formattedResults.policySpecific = {
-          'Reduction rate': `${Math.round(data.reductionRate * 100)}%`,
-          'Standard element': `£${data.standardElement?.toLocaleString() || '3,626'}/year`,
-          'Reduced element (3rd+)': `£${data.reducedElement?.toLocaleString()}/year`,
-          'Children 3rd+': data.thirdPlusChildren,
+          formattedResults.policySpecific = {
+            'Reduction rate': `${Math.round(data2026.reductionRate * 100)}%`,
+            'Standard element': `£${data2026.standardElement?.toLocaleString() || '3,626'}/year`,
+            'Reduced element (3rd+)': `£${data2026.reducedElement?.toLocaleString()}/year`,
+            'Children 3rd+': data2026.thirdPlusChildren,
+          }
         }
+
+        allResults[selectedPolicy] = formattedResults
       }
 
-      setResults(formattedResults)
+      setResults(allResults)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -142,24 +178,40 @@ function App() {
     }
   }
 
-  const handleParamChange = (param, value) => {
+  const handleParamChange = (policy, param, value) => {
     setPolicyParams(prev => ({
       ...prev,
-      [selectedPolicy]: {
-        ...prev[selectedPolicy],
+      [policy]: {
+        ...prev[policy],
         [param]: value,
       },
     }))
   }
 
+  const handlePolicyToggle = (policyId) => {
+    setSelectedPolicies(prev => {
+      if (prev.includes(policyId)) {
+        // Don't allow removing if it's the last one
+        if (prev.length === 1) return prev
+        return prev.filter(id => id !== policyId)
+      } else {
+        return [...prev, policyId]
+      }
+    })
+  }
+
+  // Automatically run analysis when policies or parameters change
+  useEffect(() => {
+    handleAnalyze()
+  }, [selectedPolicies, policyParams])
+
   return (
     <div className="app">
       <Sidebar
-        selectedPolicy={selectedPolicy}
-        onSelectPolicy={setSelectedPolicy}
-        params={policyParams[selectedPolicy]}
+        selectedPolicies={selectedPolicies}
+        onPolicyToggle={handlePolicyToggle}
+        policyParams={policyParams}
         onParamChange={handleParamChange}
-        onAnalyze={handleAnalyze}
         loading={loading}
         selectedYear={selectedYear}
         onYearChange={setSelectedYear}
@@ -175,7 +227,7 @@ function App() {
           </div>
         )}
 
-        {results && <Results data={results} policy={selectedPolicy} />}
+        {Object.keys(results).length > 0 && <Results data={results} policies={selectedPolicies} />}
       </main>
     </div>
   )

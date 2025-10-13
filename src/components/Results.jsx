@@ -1,7 +1,17 @@
 import { useEffect, useRef } from 'react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import './Results.css'
 
-function Results({ data, policy }) {
+const policyNames = {
+  'full-abolition': 'Full Abolition',
+  'three-child-limit': 'Three-Child Limit',
+  'under-five-exemption': 'Under-Five Exemption',
+  'disabled-child-exemption': 'Disabled Child Exemption',
+  'working-families-exemption': 'Working Families Exemption',
+  'lower-third-child-element': 'Lower Third+ Child Element',
+}
+
+function Results({ data, policies }) {
   const formatCurrency = (value) => {
     return `£${(value / 1e9).toFixed(2)}bn`
   }
@@ -55,12 +65,138 @@ function Results({ data, policy }) {
     return <span ref={ref}>{formatter(value)}</span>
   }
 
+  // Prepare chart data for a specific metric across years
+  const prepareChartData = (metricKey) => {
+    const years = ['2026', '2027', '2028', '2029']
+    const chartData = years.map(year => {
+      const yearData = { year }
+      policies.forEach(policyId => {
+        const policyData = data[policyId]
+
+        // Find the data for this specific year from allYearsData
+        if (policyData?.allYearsData) {
+          const yearInfo = policyData.allYearsData.find(item => item.year === year)
+
+          if (yearInfo) {
+            if (metricKey === 'budgetaryImpact') {
+              yearData[policyId] = (yearInfo.cost || 0) / 1e9 // Convert to billions
+            } else if (metricKey === 'familiesAffected') {
+              yearData[policyId] = (yearInfo.familiesAffected || 0) / 1000 // Convert to thousands
+            } else if (metricKey === 'childrenNoLongerLimited') {
+              yearData[policyId] = (yearInfo.childrenNoLongerLimited || 0) / 1000
+            } else if (metricKey === 'childrenOutOfPoverty') {
+              yearData[policyId] = (yearInfo.childrenOutOfPoverty || 0) / 1000
+            } else if (metricKey === 'povertyRateReduction') {
+              yearData[policyId] = (yearInfo.povertyRateReduction || 0) * 100 // Convert to percentage
+            }
+          }
+        }
+      })
+      return yearData
+    })
+
+    console.log(`Chart data for ${metricKey}:`, chartData)
+    return chartData
+  }
+
+  const colors = ['#319795', '#ED8936', '#9F7AEA', '#F56565', '#48BB78', '#4299E1']
+
+  console.log('Results data:', data)
+  console.log('Policies:', policies)
+
   return (
     <div className="results">
-      <h2>Analysis results</h2>
+      <h2>Analysis results - Comparison</h2>
 
-      <div className="results-grid">
-        {/* Cost Section */}
+      {/* Charts Grid */}
+      <div className="charts-grid">
+        {/* Budgetary Impact Chart */}
+        <div className="chart-section">
+          <h3>Budgetary impact (2026-2029)</h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={prepareChartData('budgetaryImpact')} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis
+                label={{ value: 'Cost (£bn)', angle: -90, position: 'center', dx: -50, style: { textAnchor: 'middle' } }}
+                tickFormatter={(value) => `£${value.toFixed(1)}bn`}
+              />
+              <Tooltip
+                formatter={(value) => `£${value.toFixed(2)}bn`}
+                labelFormatter={(label) => `Year: ${label}`}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {policies.map((policyId, index) => (
+                <Bar
+                  key={policyId}
+                  dataKey={policyId}
+                  fill={colors[index % colors.length]}
+                  name={policyNames[policyId]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Children No Longer Limited Chart */}
+        <div className="chart-section">
+          <h3>Children no longer limited</h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={prepareChartData('childrenNoLongerLimited')} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis
+                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -50, style: { textAnchor: 'middle' } }}
+                tickFormatter={(value) => `${value.toFixed(0)}k`}
+              />
+              <Tooltip
+                formatter={(value) => `${value.toFixed(1)}k children`}
+                labelFormatter={(label) => `Year: ${label}`}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {policies.map((policyId, index) => (
+                <Bar
+                  key={policyId}
+                  dataKey={policyId}
+                  fill={colors[index % colors.length]}
+                  name={policyNames[policyId]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Children Lifted from Poverty Chart */}
+        <div className="chart-section">
+          <h3>Children lifted from poverty</h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={prepareChartData('childrenOutOfPoverty')} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis
+                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -50, style: { textAnchor: 'middle' } }}
+                tickFormatter={(value) => `${value.toFixed(0)}k`}
+              />
+              <Tooltip
+                formatter={(value) => `${value.toFixed(1)}k children`}
+                labelFormatter={(label) => `Year: ${label}`}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {policies.map((policyId, index) => (
+                <Bar
+                  key={policyId}
+                  dataKey={policyId}
+                  fill={colors[index % colors.length]}
+                  name={policyNames[policyId]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="results-grid" style={{ display: 'none' }}>
+        {/* Old individual cards - hidden for now */}
         {data.cost && (
           <div className="result-card highlight">
             <h3>Cost estimate</h3>
