@@ -2,16 +2,29 @@ import { useEffect, useRef } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import './Results.css'
 
-const policyNames = {
-  'full-abolition': 'Full abolition',
-  'three-child-limit': 'Higher child limit',
-  'under-five-exemption': 'Age-based exemption',
-  'disabled-child-exemption': 'Disabled child exemption',
-  'working-families-exemption': 'Working families exemption',
-  'lower-third-child-element': 'Reduced child element',
-}
+function Results({ data, policies, policyParams }) {
+  const getPolicyName = (policyId) => {
+    const baseNames = {
+      'full-abolition': 'Full abolition',
+      'three-child-limit': 'Higher child limit',
+      'under-five-exemption': 'Age-based exemption',
+      'disabled-child-exemption': 'Disabled child exemption',
+      'working-families-exemption': 'Working families exemption',
+      'lower-third-child-element': 'Reduced child element',
+    }
 
-function Results({ data, policies }) {
+    const params = policyParams?.[policyId]
+
+    if (policyId === 'three-child-limit' && params?.childLimit) {
+      return `${params.childLimit}-child limit`
+    } else if (policyId === 'under-five-exemption' && params?.ageLimit) {
+      return `Under-${params.ageLimit} exemption`
+    } else if (policyId === 'lower-third-child-element' && params?.reductionRate) {
+      return `${Math.round(params.reductionRate * 100)}% child element`
+    }
+
+    return baseNames[policyId] || policyId
+  }
   const formatCurrency = (value) => {
     return `£${(value / 1e9).toFixed(2)}bn`
   }
@@ -117,7 +130,7 @@ function Results({ data, policies }) {
       txtContent += `\nYear: ${yearData.year}\n`
       policies.forEach(policyId => {
         if (yearData[policyId] !== undefined) {
-          txtContent += `  ${policyNames[policyId]}: £${yearData[policyId].toFixed(2)}bn\n`
+          txtContent += `  ${getPolicyName(policyId)}: £${yearData[policyId].toFixed(2)}bn\n`
         }
       })
     })
@@ -130,7 +143,7 @@ function Results({ data, policies }) {
       txtContent += `\nYear: ${yearData.year}\n`
       policies.forEach(policyId => {
         if (yearData[policyId] !== undefined) {
-          txtContent += `  ${policyNames[policyId]}: ${yearData[policyId].toFixed(1)}k children\n`
+          txtContent += `  ${getPolicyName(policyId)}: ${yearData[policyId].toFixed(1)}k children\n`
         }
       })
     })
@@ -143,7 +156,7 @@ function Results({ data, policies }) {
       txtContent += `\nYear: ${yearData.year}\n`
       policies.forEach(policyId => {
         if (yearData[policyId] !== undefined) {
-          txtContent += `  ${policyNames[policyId]}: ${yearData[policyId].toFixed(1)}k children\n`
+          txtContent += `  ${getPolicyName(policyId)}: ${yearData[policyId].toFixed(1)}k children\n`
         }
       })
     })
@@ -198,7 +211,7 @@ function Results({ data, policies }) {
                   key={policyId}
                   dataKey={policyId}
                   fill={colors[index % colors.length]}
-                  name={policyNames[policyId]}
+                  name={getPolicyName(policyId)}
                 />
               ))}
             </BarChart>
@@ -226,7 +239,7 @@ function Results({ data, policies }) {
                   key={policyId}
                   dataKey={policyId}
                   fill={colors[index % colors.length]}
-                  name={policyNames[policyId]}
+                  name={getPolicyName(policyId)}
                 />
               ))}
             </BarChart>
@@ -254,7 +267,7 @@ function Results({ data, policies }) {
                   key={policyId}
                   dataKey={policyId}
                   fill={colors[index % colors.length]}
-                  name={policyNames[policyId]}
+                  name={getPolicyName(policyId)}
                 />
               ))}
             </BarChart>

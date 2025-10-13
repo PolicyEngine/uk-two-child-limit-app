@@ -254,7 +254,7 @@ function App() {
           </div>
         )}
 
-        {Object.keys(results).length > 0 && <Results data={results} policies={selectedPolicies} />}
+        {Object.keys(results).length > 0 && <Results data={results} policies={selectedPolicies} policyParams={policyParams} />}
       </main>
     </div>
   )
