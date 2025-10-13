@@ -97,6 +97,8 @@ function App() {
             childrenNoLongerLimited: yearData.childrenNoLongerLimited,
             childrenOutOfPoverty: yearData.childrenOutOfPoverty,
             povertyRateReduction: yearData.povertyRateReduction,
+            baselinePovertyRate: yearData.baselinePovertyRate,
+            reformedPovertyRate: yearData.reformedPovertyRate,
             costPerChild: yearData.costPerChild,
           }
         })

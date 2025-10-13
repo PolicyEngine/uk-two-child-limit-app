@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import './Results.css'
 
 function Results({ data, policies, policyParams }) {
+  const [povertyChartMode, setPovertyChartMode] = useState('reduction')
+
   const getPolicyName = (policyId) => {
     const baseNames = {
       'full-abolition': 'Full abolition',
@@ -101,6 +103,10 @@ function Results({ data, policies, policyParams }) {
               yearData[policyId] = (yearInfo.childrenOutOfPoverty || 0) / 1000
             } else if (metricKey === 'povertyRateReduction') {
               yearData[policyId] = (yearInfo.povertyRateReduction || 0) * 100 // Convert to percentage
+            } else if (metricKey === 'reformedPovertyRate') {
+              yearData[policyId] = (yearInfo.reformedPovertyRate || 0) * 100 // Convert to percentage
+            } else if (metricKey === 'povertyRateChange') {
+              yearData[policyId] = ((yearInfo.baselinePovertyRate || 0) - (yearInfo.reformedPovertyRate || 0)) * 100 // Change in pp
             }
           }
         }
@@ -259,6 +265,59 @@ function Results({ data, policies, policyParams }) {
               />
               <Tooltip
                 formatter={(value) => `${value.toFixed(1)}k children`}
+                labelFormatter={(label) => `Year: ${label}`}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {policies.map((policyId, index) => (
+                <Bar
+                  key={policyId}
+                  dataKey={policyId}
+                  fill={colors[index % colors.length]}
+                  name={getPolicyName(policyId)}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Child Poverty Rate Chart */}
+        <div className="chart-section full-width">
+          <div className="chart-header">
+            <h3>Child poverty rate</h3>
+            <div className="chart-toggle">
+              <button
+                className={povertyChartMode === 'reduction' ? 'active' : ''}
+                onClick={() => setPovertyChartMode('reduction')}
+              >
+                Reduction from baseline
+              </button>
+              <button
+                className={povertyChartMode === 'rate' ? 'active' : ''}
+                onClick={() => setPovertyChartMode('rate')}
+              >
+                Absolute rate
+              </button>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart
+              data={prepareChartData(povertyChartMode === 'reduction' ? 'povertyRateReduction' : 'reformedPovertyRate')}
+              margin={{ top: 20, right: 30, left: 90, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis dataKey="year" />
+              <YAxis
+                label={{
+                  value: povertyChartMode === 'reduction' ? 'Reduction (percentage points)' : 'Child poverty rate (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  dx: -30,
+                  style: { textAnchor: 'middle' }
+                }}
+                tickFormatter={(value) => povertyChartMode === 'reduction' ? `${value.toFixed(1)}pp` : `${value.toFixed(1)}%`}
+              />
+              <Tooltip
+                formatter={(value) => povertyChartMode === 'reduction' ? `${value.toFixed(2)}pp reduction` : `${value.toFixed(2)}%`}
                 labelFormatter={(label) => `Year: ${label}`}
               />
               <Legend wrapperStyle={{ paddingTop: '20px' }} />
