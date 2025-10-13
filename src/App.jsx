@@ -51,9 +51,14 @@ function App() {
   }
 
   const handleAnalyze = async () => {
-    setLoading(true)
+    // Delay showing loading indicator to avoid flash for quick operations
+    const loadingTimeout = setTimeout(() => {
+      setLoading(true)
+    }, 300) // Only show loading if it takes more than 300ms
+
     setError(null)
-    setResults({})
+    // Don't clear results immediately to prevent white flash
+    // setResults({})
 
     try {
       // Fetch comprehensive CSV data
@@ -174,6 +179,7 @@ function App() {
     } catch (err) {
       setError(err.message)
     } finally {
+      clearTimeout(loadingTimeout)
       setLoading(false)
     }
   }

@@ -9,12 +9,12 @@ const policies = [
   },
   {
     id: 'three-child-limit',
-    name: 'Three-Child Limit',
-    description: 'Move from two-child to three-child limit',
+    name: 'Higher Child Limit',
+    description: 'Increase the child limit threshold',
   },
   {
     id: 'under-five-exemption',
-    name: 'Under-Five Exemption',
+    name: 'Age-Based Exemption',
     description: 'Exempt children under specified age',
   },
   {
@@ -29,8 +29,8 @@ const policies = [
   },
   {
     id: 'lower-third-child-element',
-    name: 'Lower Third+ Child Element',
-    description: 'Reduced element for 3rd+ children',
+    name: 'Reduced Child Element',
+    description: 'Lower payment rate for additional children',
   },
 ]
 
@@ -109,6 +109,9 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
                 step="0.1"
                 value={params.reductionRate || 0.7}
                 onChange={(e) => onParamChange(policyId, 'reductionRate', parseFloat(e.target.value))}
+                style={{
+                  background: `linear-gradient(to right, var(--pe-teal) 0%, var(--pe-teal) ${((params.reductionRate || 0.7) - 0.5) / 0.5 * 100}%, white ${((params.reductionRate || 0.7) - 0.5) / 0.5 * 100}%, white 100%)`
+                }}
               />
               <span className="slider-value">
                 {Math.round((params.reductionRate || 0.7) * 100)}%
@@ -146,7 +149,6 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
                 />
                 <div className="policy-info">
                   <div className="policy-name">{policy.name}</div>
-                  <div className="policy-description">{policy.description}</div>
                 </div>
               </label>
 

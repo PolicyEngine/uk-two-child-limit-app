@@ -4,11 +4,11 @@ import './Results.css'
 
 const policyNames = {
   'full-abolition': 'Full Abolition',
-  'three-child-limit': 'Three-Child Limit',
-  'under-five-exemption': 'Under-Five Exemption',
+  'three-child-limit': 'Higher Child Limit',
+  'under-five-exemption': 'Age-Based Exemption',
   'disabled-child-exemption': 'Disabled Child Exemption',
   'working-families-exemption': 'Working Families Exemption',
-  'lower-third-child-element': 'Lower Third+ Child Element',
+  'lower-third-child-element': 'Reduced Child Element',
 }
 
 function Results({ data, policies }) {
@@ -99,26 +99,24 @@ function Results({ data, policies }) {
     return chartData
   }
 
-  const colors = ['#319795', '#ED8936', '#9F7AEA', '#F56565', '#48BB78', '#4299E1']
+  const colors = ['#319795', '#5A8FB8', '#B8875A', '#5FB88A', '#4A7BA7', '#C59A5A']
 
   console.log('Results data:', data)
   console.log('Policies:', policies)
 
   return (
     <div className="results">
-      <h2>Analysis results - Comparison</h2>
-
       {/* Charts Grid */}
       <div className="charts-grid">
         {/* Budgetary Impact Chart */}
         <div className="chart-section">
-          <h3>Budgetary impact (2026-2029)</h3>
+          <h3>Budgetary impact</h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={prepareChartData('budgetaryImpact')} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+            <BarChart data={prepareChartData('budgetaryImpact')} margin={{ top: 20, right: 30, left: 45, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="year" />
               <YAxis
-                label={{ value: 'Cost (£bn)', angle: -90, position: 'center', dx: -50, style: { textAnchor: 'middle' } }}
+                label={{ value: 'Cost (£bn)', angle: -90, position: 'center', dx: -25, style: { textAnchor: 'middle' } }}
                 tickFormatter={(value) => `£${value.toFixed(1)}bn`}
               />
               <Tooltip
@@ -142,11 +140,11 @@ function Results({ data, policies }) {
         <div className="chart-section">
           <h3>Children no longer limited</h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={prepareChartData('childrenNoLongerLimited')} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+            <BarChart data={prepareChartData('childrenNoLongerLimited')} margin={{ top: 20, right: 30, left: 45, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="year" />
               <YAxis
-                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -50, style: { textAnchor: 'middle' } }}
+                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -25, style: { textAnchor: 'middle' } }}
                 tickFormatter={(value) => `${value.toFixed(0)}k`}
               />
               <Tooltip
@@ -170,11 +168,11 @@ function Results({ data, policies }) {
         <div className="chart-section">
           <h3>Children lifted from poverty</h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={prepareChartData('childrenOutOfPoverty')} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+            <BarChart data={prepareChartData('childrenOutOfPoverty')} margin={{ top: 20, right: 30, left: 45, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="year" />
               <YAxis
-                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -50, style: { textAnchor: 'middle' } }}
+                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -25, style: { textAnchor: 'middle' } }}
                 tickFormatter={(value) => `${value.toFixed(0)}k`}
               />
               <Tooltip

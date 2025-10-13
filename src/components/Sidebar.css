@@ -16,7 +16,6 @@
 
 .sidebar-header {
   padding: 2rem 1.5rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   overflow: visible;
 }
 
@@ -187,7 +186,6 @@
 .policy-params-inline {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .policy-option {
@@ -329,19 +327,28 @@
   flex: 1;
   height: 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.2);
   outline: none;
+  -webkit-appearance: none;
+}
+
+.slider-container input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: transparent;
 }
 
 .slider-container input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--pe-teal);
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  margin-top: -7px;
 }
 
 .slider-container input[type="range"]::-webkit-slider-thumb:hover {
@@ -349,13 +356,26 @@
   transform: scale(1.1);
 }
 
+.slider-container input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: white;
+}
+
+.slider-container input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--pe-teal);
+}
+
 .slider-container input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--pe-teal);
   cursor: pointer;
   border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .slider-value {
