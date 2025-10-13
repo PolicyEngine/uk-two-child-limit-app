@@ -3,12 +3,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import './Results.css'
 
 const policyNames = {
-  'full-abolition': 'Full Abolition',
-  'three-child-limit': 'Higher Child Limit',
-  'under-five-exemption': 'Age-Based Exemption',
-  'disabled-child-exemption': 'Disabled Child Exemption',
-  'working-families-exemption': 'Working Families Exemption',
-  'lower-third-child-element': 'Reduced Child Element',
+  'full-abolition': 'Full abolition',
+  'three-child-limit': 'Higher child limit',
+  'under-five-exemption': 'Age-based exemption',
+  'disabled-child-exemption': 'Disabled child exemption',
+  'working-families-exemption': 'Working families exemption',
+  'lower-third-child-element': 'Reduced child element',
 }
 
 function Results({ data, policies }) {
@@ -104,6 +104,75 @@ function Results({ data, policies }) {
   console.log('Results data:', data)
   console.log('Policies:', policies)
 
+  const handleDownload = () => {
+    let txtContent = 'UK Two-Child Limit Policy Analysis - Data Export\n'
+    txtContent += '='.repeat(60) + '\n'
+    txtContent += `Generated: ${new Date().toLocaleString('en-GB')}\n\n`
+
+    // Export Budgetary Impact
+    txtContent += 'BUDGETARY IMPACT (£bn)\n'
+    txtContent += '-'.repeat(60) + '\n'
+    const budgetData = prepareChartData('budgetaryImpact')
+    budgetData.forEach(yearData => {
+      txtContent += `\nYear: ${yearData.year}\n`
+      policies.forEach(policyId => {
+        if (yearData[policyId] !== undefined) {
+          txtContent += `  ${policyNames[policyId]}: £${yearData[policyId].toFixed(2)}bn\n`
+        }
+      })
+    })
+
+    // Export Children No Longer Limited
+    txtContent += '\n\nCHILDREN NO LONGER LIMITED (thousands)\n'
+    txtContent += '-'.repeat(60) + '\n'
+    const childrenLimitedData = prepareChartData('childrenNoLongerLimited')
+    childrenLimitedData.forEach(yearData => {
+      txtContent += `\nYear: ${yearData.year}\n`
+      policies.forEach(policyId => {
+        if (yearData[policyId] !== undefined) {
+          txtContent += `  ${policyNames[policyId]}: ${yearData[policyId].toFixed(1)}k children\n`
+        }
+      })
+    })
+
+    // Export Children Lifted from Poverty
+    txtContent += '\n\nCHILDREN LIFTED FROM POVERTY (thousands)\n'
+    txtContent += '-'.repeat(60) + '\n'
+    const povertyData = prepareChartData('childrenOutOfPoverty')
+    povertyData.forEach(yearData => {
+      txtContent += `\nYear: ${yearData.year}\n`
+      policies.forEach(policyId => {
+        if (yearData[policyId] !== undefined) {
+          txtContent += `  ${policyNames[policyId]}: ${yearData[policyId].toFixed(1)}k children\n`
+        }
+      })
+    })
+
+    // Create and download file
+    const blob = new Blob([txtContent], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `policy-analysis-${new Date().toISOString().slice(0, 10)}.txt`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  // Listen for download event from App header
+  useEffect(() => {
+    const handleDownloadEvent = () => {
+      handleDownload()
+    }
+
+    window.addEventListener('downloadData', handleDownloadEvent)
+
+    return () => {
+      window.removeEventListener('downloadData', handleDownloadEvent)
+    }
+  }, [data, policies])
+
   return (
     <div className="results">
       {/* Charts Grid */}
@@ -112,11 +181,11 @@ function Results({ data, policies }) {
         <div className="chart-section">
           <h3>Budgetary impact</h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={prepareChartData('budgetaryImpact')} margin={{ top: 20, right: 30, left: 45, bottom: 20 }}>
+            <BarChart data={prepareChartData('budgetaryImpact')} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="year" />
               <YAxis
-                label={{ value: 'Cost (£bn)', angle: -90, position: 'center', dx: -25, style: { textAnchor: 'middle' } }}
+                label={{ value: 'Cost (£bn)', angle: -90, position: 'insideLeft', dx: -30, style: { textAnchor: 'middle' } }}
                 tickFormatter={(value) => `£${value.toFixed(1)}bn`}
               />
               <Tooltip
@@ -140,11 +209,11 @@ function Results({ data, policies }) {
         <div className="chart-section">
           <h3>Children no longer limited</h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={prepareChartData('childrenNoLongerLimited')} margin={{ top: 20, right: 30, left: 45, bottom: 20 }}>
+            <BarChart data={prepareChartData('childrenNoLongerLimited')} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="year" />
               <YAxis
-                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -25, style: { textAnchor: 'middle' } }}
+                label={{ value: 'Children (thousands)', angle: -90, position: 'insideLeft', dx: -30, style: { textAnchor: 'middle' } }}
                 tickFormatter={(value) => `${value.toFixed(0)}k`}
               />
               <Tooltip
@@ -168,11 +237,11 @@ function Results({ data, policies }) {
         <div className="chart-section">
           <h3>Children lifted from poverty</h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={prepareChartData('childrenOutOfPoverty')} margin={{ top: 20, right: 30, left: 45, bottom: 20 }}>
+            <BarChart data={prepareChartData('childrenOutOfPoverty')} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="year" />
               <YAxis
-                label={{ value: 'Children (thousands)', angle: -90, position: 'center', dx: -25, style: { textAnchor: 'middle' } }}
+                label={{ value: 'Children (thousands)', angle: -90, position: 'insideLeft', dx: -30, style: { textAnchor: 'middle' } }}
                 tickFormatter={(value) => `${value.toFixed(0)}k`}
               />
               <Tooltip

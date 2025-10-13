@@ -4,33 +4,39 @@ import './Sidebar.css'
 const policies = [
   {
     id: 'full-abolition',
-    name: 'Full Abolition',
+    name: 'Full abolition',
     description: 'Complete removal of two-child limit',
+    info: 'Remove the two-child limit entirely so families receive support for all children.',
   },
   {
     id: 'three-child-limit',
-    name: 'Higher Child Limit',
+    name: 'Higher child limit',
     description: 'Increase the child limit threshold',
+    info: 'Families receive support for additional children beyond the current two-child limit.',
   },
   {
     id: 'under-five-exemption',
-    name: 'Age-Based Exemption',
+    name: 'Age-based exemption',
     description: 'Exempt children under specified age',
+    info: 'Younger children are exempt from the limit, but families may lose support as children age.',
   },
   {
     id: 'disabled-child-exemption',
-    name: 'Disabled Child Exemption',
+    name: 'Disabled child exemption',
     description: 'Exempt families with disabled children',
+    info: 'Families with a disabled child receiving disability benefits are exempt from the limit.',
   },
   {
     id: 'working-families-exemption',
-    name: 'Working Families Exemption',
+    name: 'Working families exemption',
     description: 'Exempt families where adults work',
+    info: 'The limit only applies to out-of-work families, exempting working households.',
   },
   {
     id: 'lower-third-child-element',
-    name: 'Reduced Child Element',
+    name: 'Reduced child element',
     description: 'Lower payment rate for additional children',
+    info: 'Additional children receive a reduced payment rate compared to earlier children.',
   },
 ]
 
@@ -148,7 +154,17 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
                   disabled={selectedPolicies.includes(policy.id) && selectedPolicies.length === 1}
                 />
                 <div className="policy-info">
-                  <div className="policy-name">{policy.name}</div>
+                  <div className="policy-name-wrapper">
+                    <div className="policy-name">{policy.name}</div>
+                    <div className="info-icon-wrapper">
+                      <svg className="info-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      <div className="info-tooltip">{policy.info}</div>
+                    </div>
+                  </div>
                 </div>
               </label>
 
