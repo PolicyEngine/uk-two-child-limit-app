@@ -151,7 +151,6 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
                   type="checkbox"
                   checked={selectedPolicies.includes(policy.id)}
                   onChange={() => onPolicyToggle(policy.id)}
-                  disabled={selectedPolicies.includes(policy.id) && selectedPolicies.length === 1}
                 />
                 <div className="policy-info">
                   <div className="policy-name-wrapper">

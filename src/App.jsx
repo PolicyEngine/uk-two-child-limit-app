@@ -5,7 +5,7 @@ import './App.css'
 
 function App() {
   const [selectedYear, setSelectedYear] = useState('2026')
-  const [selectedPolicies, setSelectedPolicies] = useState(['full-abolition']) // Changed to array
+  const [selectedPolicies, setSelectedPolicies] = useState([]) // Changed to array
   const [policyParams, setPolicyParams] = useState({
     'full-abolition': {},
     'three-child-limit': { childLimit: 3 },
@@ -199,8 +199,7 @@ function App() {
   const handlePolicyToggle = (policyId) => {
     setSelectedPolicies(prev => {
       if (prev.includes(policyId)) {
-        // Don't allow removing if it's the last one
-        if (prev.length === 1) return prev
+        // Allow removing all policies to show landing page
         return prev.filter(id => id !== policyId)
       } else {
         return [...prev, policyId]
@@ -210,7 +209,9 @@ function App() {
 
   // Automatically run analysis when policies or parameters change
   useEffect(() => {
-    handleAnalyze()
+    if (selectedPolicies.length > 0) {
+      handleAnalyze()
+    }
   }, [selectedPolicies, policyParams])
 
   return (
@@ -256,7 +257,13 @@ function App() {
           </div>
         )}
 
-        {Object.keys(results).length > 0 && <Results data={results} policies={selectedPolicies} policyParams={policyParams} />}
+        {selectedPolicies.length === 0 ? (
+          <div className="landing-message">
+            <p>Select one or more policy reforms from the sidebar to view their projected impact on child poverty, budgetary costs, and affected families.</p>
+          </div>
+        ) : (
+          Object.keys(results).length > 0 && <Results data={results} policies={selectedPolicies} policyParams={policyParams} />
+        )}
       </main>
     </div>
   )

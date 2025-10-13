@@ -122,3 +122,28 @@
   margin: 1rem 0;
   color: #c00;
 }
+
+.landing-message {
+  max-width: 800px;
+  margin: 4rem auto;
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.landing-message h2 {
+  font-size: 1.75rem;
+  color: var(--pe-gray-900);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-family: 'Open Sans', system-ui, sans-serif;
+}
+
+.landing-message p {
+  font-size: 1.1rem;
+  color: var(--pe-gray-600);
+  line-height: 1.6;
+  margin: 0;
+}
