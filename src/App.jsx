@@ -17,6 +17,67 @@ function App() {
   const [results, setResults] = useState({}) // Changed to object to store results by policy
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Initialize from URL on page load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const policiesParam = params.get('policies')
+
+    if (policiesParam) {
+      const policies = policiesParam.split(',').filter(p => p)
+      setSelectedPolicies(policies)
+
+      // Parse policy parameters from URL
+      const newPolicyParams = { ...policyParams }
+      policies.forEach(policy => {
+        if (policy === 'three-child-limit') {
+          const childLimit = params.get('childLimit')
+          if (childLimit) {
+            newPolicyParams[policy] = { childLimit: parseInt(childLimit) }
+          }
+        } else if (policy === 'under-five-exemption') {
+          const ageLimit = params.get('ageLimit')
+          if (ageLimit) {
+            newPolicyParams[policy] = { ageLimit: parseInt(ageLimit) }
+          }
+        } else if (policy === 'lower-third-child-element') {
+          const reductionRate = params.get('reductionRate')
+          if (reductionRate) {
+            newPolicyParams[policy] = { reductionRate: parseFloat(reductionRate) }
+          }
+        }
+      })
+      setPolicyParams(newPolicyParams)
+    }
+
+    setIsInitialized(true)
+  }, [])
+
+  // Update URL when policies or params change
+  useEffect(() => {
+    if (!isInitialized) return
+
+    const params = new URLSearchParams()
+
+    if (selectedPolicies.length > 0) {
+      params.set('policies', selectedPolicies.join(','))
+
+      // Add policy-specific parameters
+      selectedPolicies.forEach(policy => {
+        if (policy === 'three-child-limit' && policyParams[policy]?.childLimit) {
+          params.set('childLimit', policyParams[policy].childLimit)
+        } else if (policy === 'under-five-exemption' && policyParams[policy]?.ageLimit) {
+          params.set('ageLimit', policyParams[policy].ageLimit)
+        } else if (policy === 'lower-third-child-element' && policyParams[policy]?.reductionRate) {
+          params.set('reductionRate', policyParams[policy].reductionRate)
+        }
+      })
+    }
+
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname
+    window.history.replaceState({}, '', newUrl)
+  }, [selectedPolicies, policyParams, isInitialized])
 
   // Function to parse comprehensive CSV data
   const parseComprehensiveCSV = (text, year, policy, parameter = null) => {
@@ -228,25 +289,50 @@ function App() {
       <main className="main-content">
         <header className="header">
           <h1>Two-child limit policy analysis dashboard</h1>
-          {Object.keys(results).length > 0 && (
-            <div className="download-button-wrapper">
-              <button
-                className="download-button-header"
-                onClick={() => {
-                  // Trigger download from Results component
-                  const event = new CustomEvent('downloadData', {
-                    detail: { results, policies: selectedPolicies }
-                  })
-                  window.dispatchEvent(event)
-                }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-              </button>
-              <span className="download-tooltip">Download results</span>
+          {Object.keys(results).length > 0 && selectedPolicies.length > 0 && (
+            <div className="download-buttons-wrapper">
+              <div className="download-button-wrapper">
+                <button
+                  className="download-button-header"
+                  onClick={() => {
+                    // Trigger TXT download from Results component
+                    const event = new CustomEvent('downloadDataTxt', {
+                      detail: { results, policies: selectedPolicies }
+                    })
+                    window.dispatchEvent(event)
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </button>
+                <span className="download-tooltip">Download as TXT</span>
+              </div>
+              <div className="download-button-wrapper">
+                <button
+                  className="download-button-header"
+                  onClick={() => {
+                    // Trigger CSV download from Results component
+                    const event = new CustomEvent('downloadDataCsv', {
+                      detail: { results, policies: selectedPolicies }
+                    })
+                    window.dispatchEvent(event)
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <rect x="8" y="12" width="8" height="8" rx="1"></rect>
+                    <line x1="12" y1="12" x2="12" y2="20"></line>
+                    <line x1="8" y1="16" x2="16" y2="16"></line>
+                  </svg>
+                </button>
+                <span className="download-tooltip">Download as CSV</span>
+              </div>
             </div>
           )}
         </header>

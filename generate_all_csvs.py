@@ -91,15 +91,15 @@ for year in years:
 
     save_csv(f"public/data/full-abolition-{year}.csv", data)
 
-    # ===== 2. THREE-CHILD LIMIT (for different child limits 3-9) =====
+    # ===== 2. THREE-CHILD LIMIT (for different child limits 3-16) =====
     print(f"\n2. Three-Child Limit - {year}")
 
     # Count families by size for policy-specific data
     children_per_benunit = baseline_data_df[baseline_data_df['is_child'] == True].groupby('benunit_id').size().reset_index(name='num_children')
     affected_family_sizes = children_per_benunit[children_per_benunit['benunit_id'].isin(affected_benunits)]
 
-    # Generate data for each child limit value from 3 to 9
-    for child_limit in range(3, 10):
+    # Generate data for each child limit value from 3 to 16
+    for child_limit in range(3, 17):
         print(f"  Generating for child limit: {child_limit}")
 
         scenario_limit = Scenario(parameter_changes={
@@ -142,13 +142,13 @@ for year in years:
 
         save_csv(f"public/data/three-child-limit-{year}-limit{child_limit}.csv", data)
 
-    # ===== 3. UNDER-FIVE EXEMPTION (for different age limits 3-9) =====
+    # ===== 3. UNDER-FIVE EXEMPTION (for different age limits 3-16) =====
     print(f"\n3. Under-Five Exemption - {year}")
     age = baseline.calculate("age", year, map_to="person").values
     baseline_data_df['age'] = age
 
-    # Generate data for each age limit value from 3 to 9
-    for age_limit in range(3, 10):
+    # Generate data for each age limit value from 3 to 16
+    for age_limit in range(3, 17):
         print(f"  Generating for age limit: {age_limit}")
 
         children_under_age = baseline_data_df.copy()
@@ -298,7 +298,7 @@ for year in years:
                 })
 
     # Handle three-child-limit with different child limit values
-    for child_limit in range(3, 10):
+    for child_limit in range(3, 17):
         csv_file = f"public/data/three-child-limit-{year}-limit{child_limit}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
@@ -312,7 +312,7 @@ for year in years:
                 })
 
     # Handle under-five-exemption with different age limits
-    for age_limit in range(3, 10):
+    for age_limit in range(3, 17):
         csv_file = f"public/data/under-five-exemption-{year}-age{age_limit}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)

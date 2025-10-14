@@ -81,10 +81,22 @@ function Results({ data, policies, policyParams }) {
   }
 
   // Prepare chart data for a specific metric across years
-  const prepareChartData = (metricKey) => {
+  const prepareChartData = (metricKey, includeBaseline = false) => {
     const years = ['2026', '2027', '2028', '2029']
     const chartData = years.map(year => {
       const yearData = { year }
+
+      // Add baseline data if requested (for poverty rate absolute view)
+      if (includeBaseline && metricKey === 'reformedPovertyRate') {
+        const firstPolicyData = data[policies[0]]
+        if (firstPolicyData?.allYearsData) {
+          const yearInfo = firstPolicyData.allYearsData.find(item => item.year === year)
+          if (yearInfo) {
+            yearData['baseline'] = (yearInfo.baselinePovertyRate || 0) * 100
+          }
+        }
+      }
+
       policies.forEach(policyId => {
         const policyData = data[policyId]
 
@@ -123,7 +135,7 @@ function Results({ data, policies, policyParams }) {
   console.log('Results data:', data)
   console.log('Policies:', policies)
 
-  const handleDownload = () => {
+  const handleDownloadTxt = () => {
     let txtContent = 'UK Two-Child Limit Policy Analysis - Data Export\n'
     txtContent += '='.repeat(60) + '\n'
     txtContent += `Generated: ${new Date().toLocaleString('en-GB')}\n\n`
@@ -179,16 +191,89 @@ function Results({ data, policies, policyParams }) {
     URL.revokeObjectURL(url)
   }
 
-  // Listen for download event from App header
+  const handleDownloadCsv = () => {
+    // Prepare CSV content
+    let csvContent = 'UK Two-Child Limit Policy Analysis - Data Export\n'
+    csvContent += `Generated: ${new Date().toLocaleString('en-GB')}\n\n`
+
+    // Get all chart data
+    const budgetData = prepareChartData('budgetaryImpact')
+    const childrenLimitedData = prepareChartData('childrenNoLongerLimited')
+    const povertyData = prepareChartData('childrenOutOfPoverty')
+    const povertyRateReductionData = prepareChartData('povertyRateReduction')
+    const reformedPovertyRateData = prepareChartData('reformedPovertyRate')
+
+    // Create CSV header
+    csvContent += 'Metric,Year,' + policies.map(p => getPolicyName(p)).join(',') + '\n'
+
+    // Add Budgetary Impact rows
+    budgetData.forEach(yearData => {
+      const values = policies.map(policyId =>
+        yearData[policyId] !== undefined ? yearData[policyId].toFixed(2) : ''
+      )
+      csvContent += `Budgetary Impact (£bn),${yearData.year},${values.join(',')}\n`
+    })
+
+    // Add Children No Longer Limited rows
+    childrenLimitedData.forEach(yearData => {
+      const values = policies.map(policyId =>
+        yearData[policyId] !== undefined ? yearData[policyId].toFixed(1) : ''
+      )
+      csvContent += `Children No Longer Limited (thousands),${yearData.year},${values.join(',')}\n`
+    })
+
+    // Add Children Lifted from Poverty rows
+    povertyData.forEach(yearData => {
+      const values = policies.map(policyId =>
+        yearData[policyId] !== undefined ? yearData[policyId].toFixed(1) : ''
+      )
+      csvContent += `Children Lifted from Poverty (thousands),${yearData.year},${values.join(',')}\n`
+    })
+
+    // Add Poverty Rate Reduction rows
+    povertyRateReductionData.forEach(yearData => {
+      const values = policies.map(policyId =>
+        yearData[policyId] !== undefined ? yearData[policyId].toFixed(2) : ''
+      )
+      csvContent += `Poverty Rate Reduction (percentage points),${yearData.year},${values.join(',')}\n`
+    })
+
+    // Add Reformed Poverty Rate rows
+    reformedPovertyRateData.forEach(yearData => {
+      const values = policies.map(policyId =>
+        yearData[policyId] !== undefined ? yearData[policyId].toFixed(2) : ''
+      )
+      csvContent += `Reformed Child Poverty Rate (%),${yearData.year},${values.join(',')}\n`
+    })
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `policy-analysis-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  // Listen for download events from App header
   useEffect(() => {
-    const handleDownloadEvent = () => {
-      handleDownload()
+    const handleDownloadTxtEvent = () => {
+      handleDownloadTxt()
     }
 
-    window.addEventListener('downloadData', handleDownloadEvent)
+    const handleDownloadCsvEvent = () => {
+      handleDownloadCsv()
+    }
+
+    window.addEventListener('downloadDataTxt', handleDownloadTxtEvent)
+    window.addEventListener('downloadDataCsv', handleDownloadCsvEvent)
 
     return () => {
-      window.removeEventListener('downloadData', handleDownloadEvent)
+      window.removeEventListener('downloadDataTxt', handleDownloadTxtEvent)
+      window.removeEventListener('downloadDataCsv', handleDownloadCsvEvent)
     }
   }, [data, policies])
 
@@ -301,7 +386,10 @@ function Results({ data, policies, policyParams }) {
           </div>
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
-              data={prepareChartData(povertyChartMode === 'reduction' ? 'povertyRateReduction' : 'reformedPovertyRate')}
+              data={prepareChartData(
+                povertyChartMode === 'reduction' ? 'povertyRateReduction' : 'reformedPovertyRate',
+                povertyChartMode === 'rate' // Include baseline only in 'rate' mode
+              )}
               margin={{ top: 20, right: 30, left: 90, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -321,6 +409,13 @@ function Results({ data, policies, policyParams }) {
                 labelFormatter={(label) => `Year: ${label}`}
               />
               <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {povertyChartMode === 'rate' && (
+                <Bar
+                  dataKey="baseline"
+                  fill="#9CA3AF"
+                  name="Baseline (keeping two-child limit)"
+                />
+              )}
               {policies.map((policyId, index) => (
                 <Bar
                   key={policyId}

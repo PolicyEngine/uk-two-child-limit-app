@@ -70,7 +70,7 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
               id={`childLimit-${policyId}`}
               type="number"
               min="3"
-              max="9"
+              max="16"
               value={params.childLimit || 3}
               onChange={(e) => onParamChange(policyId, 'childLimit', parseInt(e.target.value))}
             />
@@ -90,7 +90,7 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
               id={`ageLimit-${policyId}`}
               type="number"
               min="3"
-              max="9"
+              max="16"
               value={params.ageLimit || 5}
               onChange={(e) => onParamChange(policyId, 'ageLimit', parseInt(e.target.value))}
             />
