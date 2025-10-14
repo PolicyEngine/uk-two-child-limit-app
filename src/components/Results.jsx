@@ -480,7 +480,7 @@ function Results({ data, policies, policyParams }) {
             </p>
           </div>
           <div className="chart-section full-width">
-            <div className="chart-header">
+            <div className="chart-header" style={{ justifyContent: 'flex-end' }}>
             <div className="chart-toggle">
               <button
                 className={povertyChartMode === 'reduction' ? 'active' : ''}
@@ -550,7 +550,7 @@ function Results({ data, policies, policyParams }) {
             </p>
           </div>
           <div className="chart-section full-width">
-            <div className="chart-header">
+            <div className="chart-header" style={{ justifyContent: 'flex-end' }}>
             <div className="chart-toggle">
               <button
                 className={distYear === '2026' ? 'active' : ''}

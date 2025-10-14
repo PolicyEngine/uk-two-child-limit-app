@@ -85,6 +85,13 @@
   letter-spacing: 0.025em;
 }
 
+.download-button-header.ai-report-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.5rem;
+}
+
 .download-button-wrapper {
   position: relative;
   display: flex;
