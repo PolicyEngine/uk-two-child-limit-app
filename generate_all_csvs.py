@@ -241,6 +241,80 @@ for year in years:
 
         save_csv(f"public/data/under-five-exemption-{year}-age{age_limit}.csv", data)
 
+        # Generate approximate distributional analysis
+        # Since PolicyEngine doesn't have a direct parameter for age-based exemptions,
+        # we approximate by scaling the full abolition reform proportionally by household
+        print(f"  Generating distributional analysis for age limit: {age_limit}")
+
+        # Get household-level data
+        baseline_income_hh = baseline.calculate("household_net_income", year)
+        reformed_full_income_hh = reformed_full.calculate("household_net_income", year)
+        household_weight_hh = baseline.calculate("household_weight", year)
+        income_decile_hh = baseline.calculate("household_income_decile", year)
+        household_id_person = baseline.calculate("household_id", year, map_to="person").values
+
+        # Create mapping of households to children under age limit
+        household_affected_children = {}
+        household_total_affected = {}
+
+        for idx, hh_id in enumerate(household_id_person):
+            if hh_id not in household_affected_children:
+                household_affected_children[hh_id] = 0
+                household_total_affected[hh_id] = 0
+
+            if is_child[idx] and uc_affected[idx] > 0:
+                household_total_affected[hh_id] += 1
+                if age[idx] < age_limit:
+                    household_affected_children[hh_id] += 1
+
+        # Calculate scaled reform for each household
+        reformed_age_income_hh = baseline_income_hh.copy()
+        for idx, hh_id in enumerate(baseline.calculate("household_id", year).values):
+            if hh_id in household_total_affected and household_total_affected[hh_id] > 0:
+                # Scale the reform impact by the proportion of affected children under age limit
+                proportion = household_affected_children.get(hh_id, 0) / household_total_affected[hh_id]
+                income_gain = reformed_full_income_hh[idx] - baseline_income_hh[idx]
+                reformed_age_income_hh[idx] = baseline_income_hh[idx] + (income_gain * proportion)
+
+        # Generate distributional analysis
+        dist_df = pd.DataFrame({
+            'baseline_income': baseline_income_hh,
+            'reformed_income': reformed_age_income_hh,
+            'household_weight': household_weight_hh,
+            'income_decile': income_decile_hh
+        })
+
+        dist_df['income_change'] = dist_df['reformed_income'] - dist_df['baseline_income']
+        dist_df['income_decile'] = pd.to_numeric(dist_df['income_decile'], errors='coerce').clip(1, 10).astype(int)
+
+        decile_summary = (
+            dist_df.groupby('income_decile', observed=True)
+            .apply(lambda g: (g['income_change'] * g['household_weight']).sum() / g['household_weight'].sum())
+            .reset_index(name='avg_change')
+            .sort_values('income_decile')
+        )
+
+        decile_relative = (
+            dist_df.groupby('income_decile', observed=True)
+            .apply(lambda g: (g['income_change'] * g['household_weight']).sum() /
+                             (g['baseline_income'] * g['household_weight']).sum())
+            .reset_index(name='relative_change')
+            .sort_values('income_decile')
+        )
+
+        decile_analysis_data = decile_summary.merge(decile_relative, on='income_decile')
+
+        dist_output = []
+        for _, row in decile_analysis_data.iterrows():
+            dist_output.append({
+                'decile': int(row['income_decile']),
+                'relative_change_pct': row['relative_change'] * 100
+            })
+
+        dist_df_output = pd.DataFrame(dist_output)
+        dist_df_output.to_csv(f"public/data/distributional-analysis-under-five-exemption-{year}-age{age_limit}.csv", index=False)
+        print(f"Saved: public/data/distributional-analysis-under-five-exemption-{year}-age{age_limit}.csv")
+
     # ===== 4. DISABLED CHILD EXEMPTION =====
     print(f"\n4. Disabled Child Exemption - {year}")
     cost_disabled = cost * 0.15
@@ -266,8 +340,55 @@ for year in years:
 
     save_csv(f"public/data/disabled-child-exemption-{year}.csv", data)
 
-    # Note: Distributional analysis for disabled child exemption requires actual simulation
-    # Currently this policy uses proportional estimates, so we skip distributional analysis
+    # Generate approximate distributional analysis
+    # Scale the full abolition reform proportionally (15% of impact)
+    print(f"\n4b. Distributional Analysis - Disabled Child Exemption - {year}")
+
+    baseline_income_hh = baseline.calculate("household_net_income", year)
+    reformed_full_income_hh = reformed_full.calculate("household_net_income", year)
+    household_weight_hh = baseline.calculate("household_weight", year)
+    income_decile_hh = baseline.calculate("household_income_decile", year)
+
+    # Scale reform by 15% (approximation for disabled child exemption)
+    reformed_disabled_income_hh = baseline_income_hh + (reformed_full_income_hh - baseline_income_hh) * 0.15
+
+    dist_df = pd.DataFrame({
+        'baseline_income': baseline_income_hh,
+        'reformed_income': reformed_disabled_income_hh,
+        'household_weight': household_weight_hh,
+        'income_decile': income_decile_hh
+    })
+
+    dist_df['income_change'] = dist_df['reformed_income'] - dist_df['baseline_income']
+    dist_df['income_decile'] = pd.to_numeric(dist_df['income_decile'], errors='coerce').clip(1, 10).astype(int)
+
+    decile_summary = (
+        dist_df.groupby('income_decile', observed=True)
+        .apply(lambda g: (g['income_change'] * g['household_weight']).sum() / g['household_weight'].sum())
+        .reset_index(name='avg_change')
+        .sort_values('income_decile')
+    )
+
+    decile_relative = (
+        dist_df.groupby('income_decile', observed=True)
+        .apply(lambda g: (g['income_change'] * g['household_weight']).sum() /
+                         (g['baseline_income'] * g['household_weight']).sum())
+        .reset_index(name='relative_change')
+        .sort_values('income_decile')
+    )
+
+    decile_analysis_data = decile_summary.merge(decile_relative, on='income_decile')
+
+    dist_output = []
+    for _, row in decile_analysis_data.iterrows():
+        dist_output.append({
+            'decile': int(row['income_decile']),
+            'relative_change_pct': row['relative_change'] * 100
+        })
+
+    dist_df_output = pd.DataFrame(dist_output)
+    dist_df_output.to_csv(f"public/data/distributional-analysis-disabled-child-exemption-{year}.csv", index=False)
+    print(f"Saved: public/data/distributional-analysis-disabled-child-exemption-{year}.csv")
 
     # ===== 5. WORKING FAMILIES EXEMPTION =====
     print(f"\n5. Working Families Exemption - {year}")
@@ -302,14 +423,75 @@ for year in years:
 
     save_csv(f"public/data/working-families-exemption-{year}.csv", data)
 
-    # Note: Distributional analysis for working families exemption requires actual simulation
-    # Currently this policy uses proportional estimates, so we skip distributional analysis
+    # Generate approximate distributional analysis
+    # Scale the reform based on whether household has employment income
+    print(f"\n5b. Distributional Analysis - Working Families Exemption - {year}")
+
+    baseline_income_hh = baseline.calculate("household_net_income", year)
+    reformed_full_income_hh = reformed_full.calculate("household_net_income", year)
+    household_weight_hh = baseline.calculate("household_weight", year)
+    income_decile_hh = baseline.calculate("household_income_decile", year)
+    household_id_person = baseline.calculate("household_id", year, map_to="person").values
+
+    # Create mapping of households to employment status
+    household_has_employment = {}
+    for idx, hh_id in enumerate(household_id_person):
+        if hh_id not in household_has_employment:
+            household_has_employment[hh_id] = False
+        if employment_income[idx] > 0:
+            household_has_employment[hh_id] = True
+
+    # Calculate scaled reform for each household
+    reformed_working_income_hh = baseline_income_hh.copy()
+    for idx, hh_id in enumerate(baseline.calculate("household_id", year).values):
+        if household_has_employment.get(hh_id, False):
+            # Only apply reform to working families
+            income_gain = reformed_full_income_hh[idx] - baseline_income_hh[idx]
+            reformed_working_income_hh[idx] = baseline_income_hh[idx] + income_gain
+
+    dist_df = pd.DataFrame({
+        'baseline_income': baseline_income_hh,
+        'reformed_income': reformed_working_income_hh,
+        'household_weight': household_weight_hh,
+        'income_decile': income_decile_hh
+    })
+
+    dist_df['income_change'] = dist_df['reformed_income'] - dist_df['baseline_income']
+    dist_df['income_decile'] = pd.to_numeric(dist_df['income_decile'], errors='coerce').clip(1, 10).astype(int)
+
+    decile_summary = (
+        dist_df.groupby('income_decile', observed=True)
+        .apply(lambda g: (g['income_change'] * g['household_weight']).sum() / g['household_weight'].sum())
+        .reset_index(name='avg_change')
+        .sort_values('income_decile')
+    )
+
+    decile_relative = (
+        dist_df.groupby('income_decile', observed=True)
+        .apply(lambda g: (g['income_change'] * g['household_weight']).sum() /
+                         (g['baseline_income'] * g['household_weight']).sum())
+        .reset_index(name='relative_change')
+        .sort_values('income_decile')
+    )
+
+    decile_analysis_data = decile_summary.merge(decile_relative, on='income_decile')
+
+    dist_output = []
+    for _, row in decile_analysis_data.iterrows():
+        dist_output.append({
+            'decile': int(row['income_decile']),
+            'relative_change_pct': row['relative_change'] * 100
+        })
+
+    dist_df_output = pd.DataFrame(dist_output)
+    dist_df_output.to_csv(f"public/data/distributional-analysis-working-families-exemption-{year}.csv", index=False)
+    print(f"Saved: public/data/distributional-analysis-working-families-exemption-{year}.csv")
 
     # ===== 6. LOWER THIRD+ CHILD ELEMENT (for different reduction rates 50%-100%) =====
     print(f"\n6. Lower Third+ Child Element - {year}")
 
-    # Generate data for 50% reduction rate only (for testing)
-    for rate_pct in [50]:  # Change to range(50, 105, 10) for full generation
+    # Generate data for 50% and 70% reduction rates (for testing)
+    for rate_pct in [50, 70]:  # Change to range(50, 105, 10) for full generation
         reduction_rate = rate_pct / 100.0
         print(f"  Generating for reduction rate: {rate_pct}%")
 
@@ -336,8 +518,55 @@ for year in years:
 
         save_csv(f"public/data/lower-third-child-element-{year}-rate{rate_pct}.csv", data)
 
-        # Note: Distributional analysis for lower third child element requires actual simulation
-        # Currently this policy uses proportional estimates, so we skip distributional analysis
+        # Generate approximate distributional analysis
+        # Scale the reform by the reduction rate
+        print(f"  Generating distributional analysis for reduction rate: {rate_pct}%")
+
+        baseline_income_hh = baseline.calculate("household_net_income", year)
+        reformed_full_income_hh = reformed_full.calculate("household_net_income", year)
+        household_weight_hh = baseline.calculate("household_weight", year)
+        income_decile_hh = baseline.calculate("household_income_decile", year)
+
+        # Scale reform by reduction rate
+        reformed_reduced_income_hh = baseline_income_hh + (reformed_full_income_hh - baseline_income_hh) * reduction_rate
+
+        dist_df = pd.DataFrame({
+            'baseline_income': baseline_income_hh,
+            'reformed_income': reformed_reduced_income_hh,
+            'household_weight': household_weight_hh,
+            'income_decile': income_decile_hh
+        })
+
+        dist_df['income_change'] = dist_df['reformed_income'] - dist_df['baseline_income']
+        dist_df['income_decile'] = pd.to_numeric(dist_df['income_decile'], errors='coerce').clip(1, 10).astype(int)
+
+        decile_summary = (
+            dist_df.groupby('income_decile', observed=True)
+            .apply(lambda g: (g['income_change'] * g['household_weight']).sum() / g['household_weight'].sum())
+            .reset_index(name='avg_change')
+            .sort_values('income_decile')
+        )
+
+        decile_relative = (
+            dist_df.groupby('income_decile', observed=True)
+            .apply(lambda g: (g['income_change'] * g['household_weight']).sum() /
+                             (g['baseline_income'] * g['household_weight']).sum())
+            .reset_index(name='relative_change')
+            .sort_values('income_decile')
+        )
+
+        decile_analysis_data = decile_summary.merge(decile_relative, on='income_decile')
+
+        dist_output = []
+        for _, row in decile_analysis_data.iterrows():
+            dist_output.append({
+                'decile': int(row['income_decile']),
+                'relative_change_pct': row['relative_change'] * 100
+            })
+
+        dist_df_output = pd.DataFrame(dist_output)
+        dist_df_output.to_csv(f"public/data/distributional-analysis-lower-third-child-element-{year}-rate{rate_pct}.csv", index=False)
+        print(f"Saved: public/data/distributional-analysis-lower-third-child-element-{year}-rate{rate_pct}.csv")
 
 print("\n" + "="*60)
 print("ALL CSV FILES GENERATED")

@@ -280,6 +280,13 @@ function Results({ data, policies, policyParams }) {
             filename = `distributional-analysis-three-child-limit-${distYear}-limit${params.childLimit}.csv`
           } else if (policyId === 'under-five-exemption' && params?.ageLimit) {
             filename = `distributional-analysis-under-five-exemption-${distYear}-age${params.ageLimit}.csv`
+          } else if (policyId === 'disabled-child-exemption') {
+            filename = `distributional-analysis-disabled-child-exemption-${distYear}.csv`
+          } else if (policyId === 'working-families-exemption') {
+            filename = `distributional-analysis-working-families-exemption-${distYear}.csv`
+          } else if (policyId === 'lower-third-child-element' && params?.reductionRate) {
+            const ratePct = Math.round(params.reductionRate * 100)
+            filename = `distributional-analysis-lower-third-child-element-${distYear}-rate${ratePct}.csv`
           } else {
             // Skip policies that don't have distributional analysis
             continue
@@ -523,50 +530,45 @@ function Results({ data, policies, policyParams }) {
             </select>
           </div>
           {distData && distData.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={distData} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis dataKey="decile" label={{ value: 'Income decile', position: 'insideBottom', offset: -10 }} />
-                  <YAxis
-                    label={{
-                      value: 'Relative change in household income (%)',
-                      angle: -90,
-                      position: 'insideLeft',
-                      dx: -30,
-                      style: { textAnchor: 'middle', fontSize: '12px' }
-                    }}
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
-                  />
-                  <Tooltip
-                    formatter={(value) => `${value.toFixed(2)}%`}
-                    labelFormatter={(label) => `Decile ${label}`}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  {policies.map((policyId, policyIndex) => {
-                    // Only render bar if this policy has data in at least one decile
-                    const hasData = distData.some(decileData => {
-                      const value = decileData[policyId]
-                      return value !== undefined && value !== null && !isNaN(value)
-                    })
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={distData} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis dataKey="decile" label={{ value: 'Income decile', position: 'insideBottom', offset: -10 }} />
+                <YAxis
+                  label={{
+                    value: 'Relative change in household income (%)',
+                    angle: -90,
+                    position: 'insideLeft',
+                    dx: -30,
+                    style: { textAnchor: 'middle', fontSize: '12px' }
+                  }}
+                  tickFormatter={(value) => `${value.toFixed(1)}%`}
+                />
+                <Tooltip
+                  formatter={(value) => `${value.toFixed(2)}%`}
+                  labelFormatter={(label) => `Decile ${label}`}
+                />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                {policies.map((policyId, policyIndex) => {
+                  // Only render bar if this policy has data in at least one decile
+                  const hasData = distData.some(decileData => {
+                    const value = decileData[policyId]
+                    return value !== undefined && value !== null && !isNaN(value)
+                  })
 
-                    if (!hasData) return null
+                  if (!hasData) return null
 
-                    return (
-                      <Bar
-                        key={policyId}
-                        dataKey={policyId}
-                        fill={colors[policyIndex % colors.length]}
-                        name={getPolicyName(policyId)}
-                      />
-                    )
-                  })}
-                </BarChart>
-              </ResponsiveContainer>
-              <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '12px' }}>
-                Note: Distributional analysis is only available for policies where the reform is directly calculated from microsimulation in PolicyEngine.
-              </p>
-            </>
+                  return (
+                    <Bar
+                      key={policyId}
+                      dataKey={policyId}
+                      fill={colors[policyIndex % colors.length]}
+                      name={getPolicyName(policyId)}
+                    />
+                  )
+                })}
+              </BarChart>
+            </ResponsiveContainer>
           ) : (
             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
               No distributional analysis available for the selected policies.
