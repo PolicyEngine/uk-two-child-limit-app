@@ -4,6 +4,8 @@ import './Results.css'
 
 function Results({ data, policies, policyParams }) {
   const [povertyChartMode, setPovertyChartMode] = useState('reduction')
+  const [distYear, setDistYear] = useState('2026')
+  const [distData, setDistData] = useState(null)
 
   const getPolicyName = (policyId) => {
     const baseNames = {
@@ -258,6 +260,74 @@ function Results({ data, policies, policyParams }) {
     URL.revokeObjectURL(url)
   }
 
+  // Load distributional analysis data for all selected policies
+  useEffect(() => {
+    const loadDistData = async () => {
+      try {
+        const allDistData = {}
+
+        // Track which policies have data loaded
+        const policiesWithData = []
+
+        // Load distributional data for each selected policy
+        for (const policyId of policies) {
+          let filename = ''
+          const params = policyParams?.[policyId]
+
+          if (policyId === 'full-abolition') {
+            filename = `distributional-analysis-full-abolition-${distYear}.csv`
+          } else if (policyId === 'three-child-limit' && params?.childLimit) {
+            filename = `distributional-analysis-three-child-limit-${distYear}-limit${params.childLimit}.csv`
+          } else if (policyId === 'under-five-exemption' && params?.ageLimit) {
+            filename = `distributional-analysis-under-five-exemption-${distYear}-age${params.ageLimit}.csv`
+          } else {
+            // Skip policies that don't have distributional analysis
+            continue
+          }
+
+          try {
+            const response = await fetch(`/data/${filename}`)
+            if (response.ok) {
+              const csvText = await response.text()
+              const lines = csvText.trim().split('\n')
+
+              // Skip header line
+              for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',')
+                const decile = parseInt(values[0])
+                const relativeChange = parseFloat(values[1])
+
+                if (!allDistData[decile]) {
+                  allDistData[decile] = { decile }
+                }
+                allDistData[decile][policyId] = relativeChange
+              }
+
+              // Mark this policy as having data
+              if (!policiesWithData.includes(policyId)) {
+                policiesWithData.push(policyId)
+              }
+            } else {
+              console.log(`No distributional data file found for ${policyId}: ${filename}`)
+            }
+          } catch (err) {
+            console.error(`Failed to load distributional data for ${policyId}:`, err)
+          }
+        }
+
+        // Convert to array format for recharts
+        const chartData = Object.values(allDistData).sort((a, b) => a.decile - b.decile)
+        setDistData(chartData.length > 0 ? chartData : null)
+      } catch (err) {
+        console.error('Failed to load distributional data:', err)
+      }
+    }
+
+    if (policies.length > 0) {
+      loadDistData()
+    }
+  }, [distYear, policies, policyParams])
+
   // Listen for download events from App header
   useEffect(() => {
     const handleDownloadTxtEvent = () => {
@@ -426,6 +496,82 @@ function Results({ data, policies, policyParams }) {
               ))}
             </BarChart>
           </ResponsiveContainer>
+          <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '12px' }}>
+            Note: The baseline scenario maintains the current two-child limit policy.
+          </p>
+        </div>
+
+        {/* Distributional Analysis Chart */}
+        <div className="chart-section full-width">
+          <div className="chart-header">
+            <h3>Distributional analysis by income decile</h3>
+            <select
+              value={distYear}
+              onChange={(e) => setDistYear(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e0e0e0',
+                backgroundColor: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+            </select>
+          </div>
+          {distData && distData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={distData} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="decile" label={{ value: 'Income decile', position: 'insideBottom', offset: -10 }} />
+                  <YAxis
+                    label={{
+                      value: 'Relative change in household income (%)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      dx: -30,
+                      style: { textAnchor: 'middle', fontSize: '12px' }
+                    }}
+                    tickFormatter={(value) => `${value.toFixed(1)}%`}
+                  />
+                  <Tooltip
+                    formatter={(value) => `${value.toFixed(2)}%`}
+                    labelFormatter={(label) => `Decile ${label}`}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  {policies.map((policyId, policyIndex) => {
+                    // Only render bar if this policy has data in at least one decile
+                    const hasData = distData.some(decileData => {
+                      const value = decileData[policyId]
+                      return value !== undefined && value !== null && !isNaN(value)
+                    })
+
+                    if (!hasData) return null
+
+                    return (
+                      <Bar
+                        key={policyId}
+                        dataKey={policyId}
+                        fill={colors[policyIndex % colors.length]}
+                        name={getPolicyName(policyId)}
+                      />
+                    )
+                  })}
+                </BarChart>
+              </ResponsiveContainer>
+              <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '12px' }}>
+                Note: Distributional analysis is only available for policies where the reform is directly calculated from microsimulation in PolicyEngine.
+              </p>
+            </>
+          ) : (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+              No distributional analysis available for the selected policies.
+            </div>
+          )}
         </div>
       </div>
 

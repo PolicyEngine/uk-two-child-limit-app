@@ -8,13 +8,64 @@ dataset = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
 # Create data directory if it doesn't exist
 os.makedirs("public/data", exist_ok=True)
 
-# Years to analyze (for testing, using only 2026 and 2027)
-years = [2026, 2027]  # Change to [2026, 2027, 2028, 2029] for full generation
+# Years to analyze (for testing, using only 2026)
+years = [2026]  # Change to [2026, 2027, 2028, 2029] for full generation
 
 def save_csv(filename, data_dict):
     """Save data dictionary to CSV file"""
     df = pd.DataFrame(list(data_dict.items()), columns=['metric', 'value'])
     df.to_csv(filename, index=False)
+    print(f"Saved: {filename}")
+
+def generate_distributional_analysis(baseline, reformed, year, filename):
+    """Generate and save distributional analysis for any policy reform"""
+    baseline_income_hh = baseline.calculate("household_net_income", year)
+    reformed_income_hh = reformed.calculate("household_net_income", year)
+    household_weight_hh = baseline.calculate("household_weight", year)
+    income_decile_hh = baseline.calculate("household_income_decile", year)
+
+    dist_df = pd.DataFrame({
+        'baseline_income': baseline_income_hh,
+        'reformed_income': reformed_income_hh,
+        'household_weight': household_weight_hh,
+        'income_decile': income_decile_hh
+    })
+
+    dist_df['income_change'] = dist_df['reformed_income'] - dist_df['baseline_income']
+
+    # Clean decile variable (ensure numeric, 1-10)
+    dist_df['income_decile'] = pd.to_numeric(dist_df['income_decile'], errors='coerce').clip(1, 10).astype(int)
+
+    # Calculate weighted average change by decile
+    decile_summary = (
+        dist_df.groupby('income_decile', observed=True)
+        .apply(lambda g: (g['income_change'] * g['household_weight']).sum() / g['household_weight'].sum())
+        .reset_index(name='avg_change')
+        .sort_values('income_decile')
+    )
+
+    # Calculate relative change by decile
+    decile_relative = (
+        dist_df.groupby('income_decile', observed=True)
+        .apply(lambda g: (g['income_change'] * g['household_weight']).sum() /
+                         (g['baseline_income'] * g['household_weight']).sum())
+        .reset_index(name='relative_change')
+        .sort_values('income_decile')
+    )
+
+    # Merge absolute and relative changes
+    decile_analysis_data = decile_summary.merge(decile_relative, on='income_decile')
+
+    # Save distributional analysis data
+    dist_output = []
+    for _, row in decile_analysis_data.iterrows():
+        dist_output.append({
+            'decile': int(row['income_decile']),
+            'relative_change_pct': row['relative_change'] * 100
+        })
+
+    dist_df_output = pd.DataFrame(dist_output)
+    dist_df_output.to_csv(filename, index=False)
     print(f"Saved: {filename}")
 
 for year in years:
@@ -91,6 +142,10 @@ for year in years:
 
     save_csv(f"public/data/full-abolition-{year}.csv", data)
 
+    # ===== DISTRIBUTIONAL ANALYSIS FOR FULL ABOLITION =====
+    print(f"\n1b. Distributional Analysis - Full Abolition - {year}")
+    generate_distributional_analysis(baseline, reformed_full, year, f"public/data/distributional-analysis-full-abolition-{year}.csv")
+
     # ===== 2. THREE-CHILD LIMIT (for different child limits 3-16) =====
     print(f"\n2. Three-Child Limit - {year}")
 
@@ -98,8 +153,8 @@ for year in years:
     children_per_benunit = baseline_data_df[baseline_data_df['is_child'] == True].groupby('benunit_id').size().reset_index(name='num_children')
     affected_family_sizes = children_per_benunit[children_per_benunit['benunit_id'].isin(affected_benunits)]
 
-    # Generate data for each child limit value from 3 to 16
-    for child_limit in range(3, 17):
+    # Generate data for child limit 3 only (for testing)
+    for child_limit in [3]:  # Change to range(3, 17) for full generation
         print(f"  Generating for child limit: {child_limit}")
 
         scenario_limit = Scenario(parameter_changes={
@@ -142,13 +197,17 @@ for year in years:
 
         save_csv(f"public/data/three-child-limit-{year}-limit{child_limit}.csv", data)
 
+        # Generate distributional analysis for this policy
+        print(f"  Generating distributional analysis for child limit: {child_limit}")
+        generate_distributional_analysis(baseline, reformed_limit, year, f"public/data/distributional-analysis-three-child-limit-{year}-limit{child_limit}.csv")
+
     # ===== 3. UNDER-FIVE EXEMPTION (for different age limits 3-16) =====
     print(f"\n3. Under-Five Exemption - {year}")
     age = baseline.calculate("age", year, map_to="person").values
     baseline_data_df['age'] = age
 
-    # Generate data for each age limit value from 3 to 16
-    for age_limit in range(3, 17):
+    # Generate data for age limit 3 only (for testing)
+    for age_limit in [3]:  # Change to range(3, 17) for full generation
         print(f"  Generating for age limit: {age_limit}")
 
         children_under_age = baseline_data_df.copy()
@@ -207,6 +266,9 @@ for year in years:
 
     save_csv(f"public/data/disabled-child-exemption-{year}.csv", data)
 
+    # Note: Distributional analysis for disabled child exemption requires actual simulation
+    # Currently this policy uses proportional estimates, so we skip distributional analysis
+
     # ===== 5. WORKING FAMILIES EXEMPTION =====
     print(f"\n5. Working Families Exemption - {year}")
     employment_income = baseline.calculate("employment_income", year, map_to="person").values
@@ -240,11 +302,14 @@ for year in years:
 
     save_csv(f"public/data/working-families-exemption-{year}.csv", data)
 
+    # Note: Distributional analysis for working families exemption requires actual simulation
+    # Currently this policy uses proportional estimates, so we skip distributional analysis
+
     # ===== 6. LOWER THIRD+ CHILD ELEMENT (for different reduction rates 50%-100%) =====
     print(f"\n6. Lower Third+ Child Element - {year}")
 
-    # Generate data for each reduction rate from 50% to 100% in 10% increments
-    for rate_pct in range(50, 105, 10):
+    # Generate data for 50% reduction rate only (for testing)
+    for rate_pct in [50]:  # Change to range(50, 105, 10) for full generation
         reduction_rate = rate_pct / 100.0
         print(f"  Generating for reduction rate: {rate_pct}%")
 
@@ -270,6 +335,9 @@ for year in years:
         }
 
         save_csv(f"public/data/lower-third-child-element-{year}-rate{rate_pct}.csv", data)
+
+        # Note: Distributional analysis for lower third child element requires actual simulation
+        # Currently this policy uses proportional estimates, so we skip distributional analysis
 
 print("\n" + "="*60)
 print("ALL CSV FILES GENERATED")
@@ -298,7 +366,7 @@ for year in years:
                 })
 
     # Handle three-child-limit with different child limit values
-    for child_limit in range(3, 17):
+    for child_limit in [3]:  # Change to range(3, 17) for full generation
         csv_file = f"public/data/three-child-limit-{year}-limit{child_limit}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
@@ -312,7 +380,7 @@ for year in years:
                 })
 
     # Handle under-five-exemption with different age limits
-    for age_limit in range(3, 17):
+    for age_limit in [3]:  # Change to range(3, 17) for full generation
         csv_file = f"public/data/under-five-exemption-{year}-age{age_limit}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
@@ -326,7 +394,7 @@ for year in years:
                 })
 
     # Handle lower-third-child-element with different reduction rates
-    for rate_pct in range(50, 105, 10):
+    for rate_pct in [50]:  # Change to range(50, 105, 10) for full generation
         csv_file = f"public/data/lower-third-child-element-{year}-rate{rate_pct}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
