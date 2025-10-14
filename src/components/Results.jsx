@@ -356,11 +356,25 @@ function Results({ data, policies, policyParams }) {
 
   return (
     <div className="results">
+      {/* Introduction */}
+      <h3 style={{ marginBottom: '16px' }}>Introduction</h3>
+      <div style={{ marginBottom: '24px', lineHeight: '1.6', color: '#374151' }}>
+        <p style={{ marginBottom: '0' }}>
+          The two-child limit <a href="https://www.gov.uk/guidance/claiming-benefits-for-2-or-more-children" target="_blank" rel="noopener noreferrer" style={{ color: '#319795', textDecoration: 'underline' }}>prevents</a> parents from claiming Universal Credit or Child Tax Credit for more than two children born after 2017. This analysis examines various policy options for reforming the two-child limit and their impacts on household incomes, government spending, income distribution, and poverty rates.
+        </p>
+      </div>
+
       {/* Charts Grid */}
       <div className="charts-grid">
         {/* Budgetary Impact Chart */}
-        <div className="chart-section">
-          <h3>Budgetary impact</h3>
+        <div style={{ marginTop: '24px' }}>
+          <h3 style={{ marginBottom: '16px' }}>Budgetary impact</h3>
+          <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
+            <p style={{ margin: '0' }}>
+              This chart shows the estimated fiscal cost to the government of implementing each reform option. Costs vary depending on how many families would benefit and the extent of support provided.
+            </p>
+          </div>
+          <div className="chart-section">
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={prepareChartData('budgetaryImpact')} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -384,11 +398,18 @@ function Results({ data, policies, policyParams }) {
               ))}
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Children No Longer Limited Chart */}
-        <div className="chart-section">
-          <h3>Children no longer limited</h3>
+        <div style={{ marginTop: '48px' }}>
+          <h3 style={{ marginBottom: '16px' }}>Children no longer limited</h3>
+          <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
+            <p style={{ margin: '0' }}>
+              This chart presents the number of children who would no longer be subject to the two-child limit under each reform option. Different reform approaches target different populations of affected children.
+            </p>
+          </div>
+          <div className="chart-section">
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={prepareChartData('childrenNoLongerLimited')} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -412,11 +433,18 @@ function Results({ data, policies, policyParams }) {
               ))}
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Children Lifted from Poverty Chart */}
-        <div className="chart-section">
-          <h3>Children lifted from poverty</h3>
+        <div style={{ marginTop: '48px' }}>
+          <h3 style={{ marginBottom: '16px' }}>Children lifted from poverty</h3>
+          <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
+            <p style={{ margin: '0' }}>
+              This chart shows the poverty reduction impact of each reform option, measured by the number of children who would be lifted above the poverty line. It demonstrates the effectiveness of each policy in addressing child poverty.
+            </p>
+          </div>
+          <div className="chart-section">
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={prepareChartData('childrenOutOfPoverty')} margin={{ top: 20, right: 30, left: 90, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -440,12 +468,19 @@ function Results({ data, policies, policyParams }) {
               ))}
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Child Poverty Rate Chart */}
-        <div className="chart-section full-width">
-          <div className="chart-header">
-            <h3>Child poverty rate</h3>
+        <div style={{ marginTop: '48px' }}>
+          <h3 style={{ marginBottom: '16px' }}>Child poverty rate</h3>
+          <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
+            <p style={{ margin: '0' }}>
+              This chart displays the change in child poverty rates under different reform scenarios, where the baseline maintains the current two-child limit policy. You can toggle between viewing the reduction from baseline or the absolute poverty rate after reform.
+            </p>
+          </div>
+          <div className="chart-section full-width">
+            <div className="chart-header">
             <div className="chart-toggle">
               <button
                 className={povertyChartMode === 'reduction' ? 'active' : ''}
@@ -503,31 +538,45 @@ function Results({ data, policies, policyParams }) {
               ))}
             </BarChart>
           </ResponsiveContainer>
-          <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '12px' }}>
-            Note: The baseline scenario maintains the current two-child limit policy.
-          </p>
+          </div>
         </div>
 
         {/* Distributional Analysis Chart */}
-        <div className="chart-section full-width">
-          <div className="chart-header">
-            <h3>Distributional analysis by income decile</h3>
-            <select
-              value={distYear}
-              onChange={(e) => setDistYear(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid #e0e0e0',
-                backgroundColor: 'white',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-              <option value="2029">2029</option>
-            </select>
+        <div style={{ marginTop: '48px' }}>
+          <h3 style={{ marginBottom: '16px' }}>Distributional analysis by income decile</h3>
+          <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
+            <p style={{ margin: '0' }}>
+              This chart shows how the income effects of each reform are distributed across household income deciles, from the lowest-income to highest-income households.
+            </p>
+          </div>
+          <div className="chart-section full-width">
+            <div className="chart-header">
+            <div className="chart-toggle">
+              <button
+                className={distYear === '2026' ? 'active' : ''}
+                onClick={() => setDistYear('2026')}
+              >
+                2026
+              </button>
+              <button
+                className={distYear === '2027' ? 'active' : ''}
+                onClick={() => setDistYear('2027')}
+              >
+                2027
+              </button>
+              <button
+                className={distYear === '2028' ? 'active' : ''}
+                onClick={() => setDistYear('2028')}
+              >
+                2028
+              </button>
+              <button
+                className={distYear === '2029' ? 'active' : ''}
+                onClick={() => setDistYear('2029')}
+              >
+                2029
+              </button>
+            </div>
           </div>
           {distData && distData.length > 0 ? (
             <ResponsiveContainer width="100%" height={350}>
@@ -574,6 +623,7 @@ function Results({ data, policies, policyParams }) {
               No distributional analysis available for the selected policies.
             </div>
           )}
+          </div>
         </div>
       </div>
 
