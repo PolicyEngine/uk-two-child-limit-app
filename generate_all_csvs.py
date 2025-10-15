@@ -8,8 +8,8 @@ dataset = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
 # Create data directory if it doesn't exist
 os.makedirs("public/data", exist_ok=True)
 
-# Years to analyze (for testing, using only 2026)
-years = [2026]  # Change to [2026, 2027, 2028, 2029] for full generation
+# Years to analyze
+years = [2026, 2027, 2028, 2029]
 
 def save_csv(filename, data_dict):
     """Save data dictionary to CSV file"""
@@ -153,8 +153,8 @@ for year in years:
     children_per_benunit = baseline_data_df[baseline_data_df['is_child'] == True].groupby('benunit_id').size().reset_index(name='num_children')
     affected_family_sizes = children_per_benunit[children_per_benunit['benunit_id'].isin(affected_benunits)]
 
-    # Generate data for child limit 3 only (for testing)
-    for child_limit in [3]:  # Change to range(3, 17) for full generation
+    # Generate data for child limits 3-16
+    for child_limit in range(3, 17):
         print(f"  Generating for child limit: {child_limit}")
 
         scenario_limit = Scenario(parameter_changes={
@@ -206,8 +206,8 @@ for year in years:
     age = baseline.calculate("age", year, map_to="person").values
     baseline_data_df['age'] = age
 
-    # Generate data for age limit 3 only (for testing)
-    for age_limit in [3]:  # Change to range(3, 17) for full generation
+    # Generate data for age limits 3-16
+    for age_limit in range(3, 17):
         print(f"  Generating for age limit: {age_limit}")
 
         children_under_age = baseline_data_df.copy()
@@ -490,8 +490,8 @@ for year in years:
     # ===== 6. LOWER THIRD+ CHILD ELEMENT (for different reduction rates 50%-100%) =====
     print(f"\n6. Lower Third+ Child Element - {year}")
 
-    # Generate data for 50% and 70% reduction rates (for testing)
-    for rate_pct in [50, 70]:  # Change to range(50, 105, 10) for full generation
+    # Generate data for reduction rates 50%-100% every 10%
+    for rate_pct in range(50, 105, 10):
         reduction_rate = rate_pct / 100.0
         print(f"  Generating for reduction rate: {rate_pct}%")
 
@@ -595,7 +595,7 @@ for year in years:
                 })
 
     # Handle three-child-limit with different child limit values
-    for child_limit in [3]:  # Change to range(3, 17) for full generation
+    for child_limit in range(3, 17):
         csv_file = f"public/data/three-child-limit-{year}-limit{child_limit}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
@@ -609,7 +609,7 @@ for year in years:
                 })
 
     # Handle under-five-exemption with different age limits
-    for age_limit in [3]:  # Change to range(3, 17) for full generation
+    for age_limit in range(3, 17):
         csv_file = f"public/data/under-five-exemption-{year}-age{age_limit}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
@@ -623,7 +623,7 @@ for year in years:
                 })
 
     # Handle lower-third-child-element with different reduction rates
-    for rate_pct in [50]:  # Change to range(50, 105, 10) for full generation
+    for rate_pct in range(50, 105, 10):
         csv_file = f"public/data/lower-third-child-element-{year}-rate{rate_pct}.csv"
         if os.path.exists(csv_file):
             df = pd.read_csv(csv_file)
