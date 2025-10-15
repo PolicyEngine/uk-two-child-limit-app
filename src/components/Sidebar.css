@@ -11,7 +11,7 @@
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   z-index: 50;
 }
 
@@ -31,7 +31,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
 }
 
 .selected-policy-display {
@@ -312,7 +312,7 @@
   font-weight: 600;
   margin-bottom: 1rem;
   color: var(--pe-teal-light);
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
 }
 
 .policy-parameters {
@@ -327,7 +327,7 @@
   font-weight: 600;
   margin-bottom: 1rem;
   color: white;
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
 }
 
 .param-content {

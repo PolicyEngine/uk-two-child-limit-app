@@ -10,7 +10,7 @@
   color: var(--pe-gray-900);
   margin-bottom: 1.5rem;
   font-weight: 600;
-  font-family: 'Open Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   line-height: 1.3;
 }
 
@@ -55,7 +55,7 @@
   color: var(--pe-gray-900);
   margin-bottom: 0.5rem;
   transition: all 0.3s ease;
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -106,7 +106,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -146,7 +146,7 @@
 .detail-value {
   font-weight: 600;
   color: #1a1a1a;
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -336,7 +336,7 @@
 }
 
 .comparison-table .metric-value {
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   font-size: 1.1rem;

@@ -360,7 +360,7 @@ function Results({ data, policies, policyParams }) {
       <h3 style={{ marginBottom: '16px' }}>Introduction</h3>
       <div style={{ marginBottom: '24px', lineHeight: '1.6', color: '#374151' }}>
         <p style={{ marginBottom: '0' }}>
-          The two-child limit <a href="https://www.gov.uk/guidance/claiming-benefits-for-2-or-more-children" target="_blank" rel="noopener noreferrer" style={{ color: '#319795', textDecoration: 'underline' }}>prevents</a> parents from claiming Universal Credit or Child Tax Credit for more than two children born after 2017. This analysis examines various policy options for reforming the two-child limit and their impacts on household incomes, government spending, income distribution, and poverty rates.
+          The two-child limit <a href="https://www.gov.uk/guidance/claiming-benefits-for-2-or-more-children" target="_blank" rel="noopener noreferrer" style={{ color: '#319795', textDecoration: 'underline' }}>prevents</a> parents from claiming Universal Credit or Child Tax Credit for more than two children born after 2017. This analysis examines various policy options for reforming the two-child limit and their impacts on household incomes, government spending, income distribution and poverty rates, assuming no behavioural responses. For a full research report on complete abolition of the two-child limit, read <a href="https://policyengine.org/uk/research/uk-two-child-limit" target="_blank" rel="noopener noreferrer" style={{ color: '#319795', textDecoration: 'underline' }}>this PolicyEngine analysis</a>.
         </p>
       </div>
 
@@ -476,7 +476,7 @@ function Results({ data, policies, policyParams }) {
           <h3 style={{ marginBottom: '16px' }}>Child poverty rate</h3>
           <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
             <p style={{ margin: '0' }}>
-              This chart displays the change in child poverty rates under different reform scenarios, where the baseline maintains the current two-child limit policy. You can toggle between viewing the reduction from baseline or the absolute poverty rate after reform.
+              This chart displays the change in child poverty rates under different reform scenarios, where the baseline maintains the current two-child limit policy. You can toggle between viewing the reduction from baseline or the absolute poverty rate after reform (before housing costs).
             </p>
           </div>
           <div className="chart-section full-width">
@@ -543,7 +543,7 @@ function Results({ data, policies, policyParams }) {
 
         {/* Distributional Analysis Chart */}
         <div style={{ marginTop: '48px' }}>
-          <h3 style={{ marginBottom: '16px' }}>Distributional analysis by income decile</h3>
+          <h3 style={{ marginBottom: '16px' }}>Distributional analysis</h3>
           <div style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem', color: '#4B5563' }}>
             <p style={{ margin: '0' }}>
               This chart shows how the income effects of each reform are distributed across household income deciles, from the lowest-income to highest-income households.

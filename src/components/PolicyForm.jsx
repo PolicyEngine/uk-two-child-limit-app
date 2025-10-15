@@ -115,7 +115,7 @@ function PolicyForm({ selectedPolicy, params, onParamChange, onAnalyze, loading 
         {loading ? (
           <>
             <span className="spinner"></span>
-            Analyzing...
+            Analysing...
           </>
         ) : (
           'Run Analysis'

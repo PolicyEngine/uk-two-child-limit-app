@@ -192,7 +192,7 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
       {loading && (
         <div className="loading-indicator">
           <span className="spinner"></span>
-          <span>Analyzing {selectedPolicies.length} {selectedPolicies.length === 1 ? 'policy' : 'policies'}...</span>
+          <span>Analysing {selectedPolicies.length} {selectedPolicies.length === 1 ? 'policy' : 'policies'}...</span>
         </div>
       )}
     </aside>
