@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './Sidebar.css'
 
 const policies = [
@@ -43,6 +43,24 @@ const policies = [
 function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange, loading, selectedYear, onYearChange }) {
   const [showPolicyList, setShowPolicyList] = useState(true) // Show by default for multi-select
   const [expandedPolicy, setExpandedPolicy] = useState(null) // Track which policy params are shown
+  const [tooltipPosition, setTooltipPosition] = useState({})
+
+  const handleInfoIconMouseEnter = (e, policyId) => {
+    const iconRect = e.currentTarget.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const tooltipHeight = 200 // max-height
+
+    let top = iconRect.top
+
+    // If tooltip would go off bottom of screen, position it higher
+    if (top + tooltipHeight > viewportHeight) {
+      top = viewportHeight - tooltipHeight - 20
+    }
+
+    setTooltipPosition({
+      [policyId]: { top }
+    })
+  }
 
   const hasAdjustableParameters = (policyId) => {
     return ['three-child-limit', 'under-five-exemption', 'lower-third-child-element'].includes(policyId)
@@ -166,13 +184,21 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
                 <div className="policy-info">
                   <div className="policy-name-wrapper">
                     <div className="policy-name">{policy.name}</div>
-                    <div className="info-icon-wrapper">
+                    <div
+                      className="info-icon-wrapper"
+                      onMouseEnter={(e) => handleInfoIconMouseEnter(e, policy.id)}
+                    >
                       <svg className="info-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="12" y1="16" x2="12" y2="12"></line>
                         <line x1="12" y1="8" x2="12.01" y2="8"></line>
                       </svg>
-                      <div className="info-tooltip">{policy.info}</div>
+                      <div
+                        className="info-tooltip"
+                        style={tooltipPosition[policy.id] ? { top: tooltipPosition[policy.id].top } : {}}
+                      >
+                        {policy.info}
+                      </div>
                     </div>
                   </div>
                 </div>

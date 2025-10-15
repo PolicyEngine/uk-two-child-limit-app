@@ -159,3 +159,53 @@
   line-height: 1.6;
   margin: 0;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .download-buttons-wrapper {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .download-button-header {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .download-button-header .format-label {
+    display: none;
+  }
+
+  .landing-message {
+    margin: 2rem auto;
+    padding: 2rem 1rem;
+  }
+
+  .landing-message h2 {
+    font-size: 1.25rem;
+  }
+
+  .landing-message p {
+    font-size: 1rem;
+  }
+}

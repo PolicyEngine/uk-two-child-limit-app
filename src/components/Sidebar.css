@@ -216,14 +216,16 @@
 .info-tooltip {
   position: fixed;
   left: 420px;
+  width: 350px;
+  max-height: 200px;
+  overflow-y: auto;
   background: rgba(0, 0, 0, 0.95);
   color: white;
-  padding: 0.875rem 1.125rem;
+  padding: 1rem 1.25rem;
   border-radius: 8px;
   font-size: 0.875rem;
   line-height: 1.5;
   white-space: normal;
-  width: 320px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -239,7 +241,7 @@
   content: '';
   position: absolute;
   right: 100%;
-  top: 1.5rem;
+  top: 1rem;
   border: 8px solid transparent;
   border-right-color: rgba(0, 0, 0, 0.95);
 }
@@ -576,4 +578,64 @@
   font-size: 0.95rem;
   font-weight: 500;
   z-index: 1000;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+  }
+
+  .sidebar-header {
+    padding: 1.5rem 1rem;
+  }
+
+  .sidebar-header .logo {
+    width: 120px;
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .sidebar-header h3 {
+    font-size: 1rem;
+  }
+
+  .policy-parameters-inline h3 {
+    font-size: 0.9rem;
+  }
+
+  .policy-parameters h3 {
+    font-size: 1rem;
+  }
+
+  .info-tooltip {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 50%;
+    width: 280px;
+  }
+
+  .info-tooltip::before {
+    display: none;
+  }
+
+  .loading-indicator {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1rem;
+    font-size: 0.85rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .analyze-button {
+    font-size: 0.9rem;
+    padding: 0.65rem 1.25rem;
+  }
 }

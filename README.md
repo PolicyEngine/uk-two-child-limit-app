@@ -24,6 +24,8 @@ The two-child limit prevents parents from claiming Universal Credit or Child Tax
   - Child poverty rate changes (reduction from baseline or absolute rate)
   - Distributional analysis by income decile
 
+- **Responsive design** - Fully optimised for desktop and mobile devices
+
 ## Prerequisites
 
 - Node.js (v16 or higher)
