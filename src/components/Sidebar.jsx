@@ -66,11 +66,6 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
     return ['three-child-limit', 'under-five-exemption', 'lower-third-child-element'].includes(policyId)
   }
 
-  const handleLogoClick = () => {
-    // Clear all selected policies to return to landing page
-    selectedPolicies.forEach(policyId => onPolicyToggle(policyId))
-  }
-
   const renderParameterInputs = (policyId) => {
     const params = policyParams[policyId]
 
@@ -161,14 +156,6 @@ function Sidebar({ selectedPolicies, onPolicyToggle, policyParams, onParamChange
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <img
-          src="/white.png"
-          alt="PolicyEngine"
-          className="logo"
-          onClick={handleLogoClick}
-          style={{ cursor: 'pointer', marginBottom: '2rem' }}
-        />
-
         <h3 style={{ color: 'white', marginBottom: '1rem' }}>Select policies to compare</h3>
 
         {/* Policy List with Checkboxes */}
