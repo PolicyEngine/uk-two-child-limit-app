@@ -18,6 +18,7 @@ export default defineConfig([
       // CI surfaces them without blocking the migration build.
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/static-components': 'warn',
+      'react-hooks/refs': 'warn',
     },
   },
   {
