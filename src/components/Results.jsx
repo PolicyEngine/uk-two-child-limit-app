@@ -295,7 +295,7 @@ function Results({ data, policies, policyParams }) {
           }
 
           try {
-            const response = await fetch(`/data/${filename}`)
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/data/${filename}`)
             if (response.ok) {
               const csvText = await response.text()
               const lines = csvText.trim().split('\n')
