@@ -1,9 +1,9 @@
 .sidebar {
   position: fixed;
   left: 0;
-  top: 0;
+  top: var(--pe-site-header-height);
   width: 400px;
-  height: 100vh;
+  height: calc(100vh - var(--pe-site-header-height));
   background: linear-gradient(180deg, var(--pe-teal-dark) 0%, #1f2937 100%);
   color: white;
   overflow-y: auto;
@@ -584,6 +584,7 @@
 @media (max-width: 768px) {
   .sidebar {
     position: relative;
+    top: auto;
     width: 100%;
     height: auto;
     min-height: auto;
