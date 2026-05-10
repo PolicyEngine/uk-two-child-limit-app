@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import PolicyEngineHeader from '../components/PolicyEngineHeader';
 import './globals.css';
 
 const TITLE = 'UK Two-Child Limit Policy Analysis | PolicyEngine';
@@ -47,7 +48,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <PolicyEngineHeader />
+        {children}
+      </body>
     </html>
   );
 }
