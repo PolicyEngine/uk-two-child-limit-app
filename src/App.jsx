@@ -125,7 +125,7 @@ function App() {
 
     try {
       // Fetch comprehensive CSV data
-      const response = await fetch('/data/all-results.csv')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/data/all-results.csv`)
 
       if (!response.ok) {
         throw new Error('Failed to load analysis data')
