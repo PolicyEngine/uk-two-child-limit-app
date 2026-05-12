@@ -7,10 +7,6 @@
   box-sizing: border-box;
 }
 
-:root {
-  --pe-site-header-height: var(--spacing-header, 58px);
-}
-
 body {
   font-family: var(--pe-font-family-primary, "Inter", -apple-system, BlinkMacSystemFont, sans-serif);
   -webkit-font-smoothing: antialiased;
