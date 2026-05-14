@@ -7,10 +7,6 @@
   box-sizing: border-box;
 }
 
-:root {
-  --pe-site-header-height: var(--spacing-header, 58px);
-}
-
 body {
   font-family: var(--pe-font-family-primary, "Inter", -apple-system, BlinkMacSystemFont, sans-serif);
   -webkit-font-smoothing: antialiased;
@@ -22,7 +18,15 @@ code {
   font-family: var(--pe-font-family-primary, "Inter", -apple-system, BlinkMacSystemFont, sans-serif);
 }
 
-#root,
-body > div {
+/*
+ * `.app` already sets its own min-height in App.css. The previous selector
+ * (`body > div`) was a Vite-era leftover from when `<div id="root">` was
+ * the only direct body child. After the Next 16 migration the PolicyEngine
+ * shell renders a sibling `<div>` above `.app`, and the broad selector
+ * stretched it to one full viewport tall — so the dashboard's main content
+ * appeared a full screen below the sidebar instead of next to it. Scope
+ * the rule to `.app` only and let the shell header size itself.
+ */
+.app {
   min-height: 100vh;
 }

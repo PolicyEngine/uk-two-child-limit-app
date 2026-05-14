@@ -29,7 +29,7 @@
   align-items: center;
   justify-content: space-between;
   position: sticky;
-  top: var(--pe-site-header-height);
+  top: 0;
   background: var(--pe-gray-50);
   z-index: 100;
   padding-top: 2rem;
